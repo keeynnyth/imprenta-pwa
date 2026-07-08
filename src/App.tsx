@@ -1,28 +1,23 @@
+import MenuLateral from "./components/layout/MenuLateral";
 
 function App() {
   return (
-    <div className="min-h-screen bg-slate-100">
-      {/* Header */}
-      <header className="bg-blue-700 text-white shadow">
-        <div className="mx-auto flex h-16 items-center justify-between px-6">
-          <h1 className="text-xl font-bold">🖨️ Sistema de Imprenta</h1>
+    <div className="flex h-screen">
 
-          <span>Administrador</span>
-        </div>
-      </header>
+      <MenuLateral />
 
-      {/* Contenido */}
-      <main className="p-8">
+      <main className="flex-1 bg-slate-100 p-8">
+
+        <h1 className="mb-4 text-3xl font-bold">
+          Bienvenido
+        </h1>
+
         <div className="rounded-lg bg-white p-6 shadow">
-          <h2 className="mb-4 text-2xl font-bold">
-            Bienvenido
-          </h2>
-
-          <p>
-            Nuestro sistema de imprenta está comenzando 🚀
-          </p>
+          Aquí construiremos el sistema.
         </div>
+
       </main>
+
     </div>
   );
 }
