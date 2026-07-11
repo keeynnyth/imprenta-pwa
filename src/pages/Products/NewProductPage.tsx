@@ -1,10 +1,16 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { crearProducto } from "../../services/products.service";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
+import {
+  crearProducto,
+  obtenerProductoPorId,
+  actualizarProducto,
+} from "../../services/products.service";
 
 function NewProductPage() {
   const navigate = useNavigate();
+  const { id } = useParams();
 
   // Estados del formulario
   const [sku, setSku] = useState("");
@@ -13,9 +19,34 @@ function NewProductPage() {
 
   // Estados de la pantalla
   const [guardando, setGuardando] = useState(false);
+  const [cargando, setCargando] = useState(false);
   const [error, setError] = useState("");
 
-  // Guardar producto
+  // Si existe un ID en la URL, cargar el producto
+  useEffect(() => {
+    if (id) {
+      cargarProducto();
+    }
+  }, [id]);
+
+  async function cargarProducto() {
+    try {
+      setCargando(true);
+
+      const producto = await obtenerProductoPorId(id!);
+
+      setSku(producto.sku);
+      setNombre(producto.nombre);
+      setCostoUsd(producto.costo_usd.toString());
+    } catch (error) {
+      console.error(error);
+      setError("No fue posible cargar el producto.");
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  // Guardar o actualizar
   async function guardarProducto(
     event: React.FormEvent<HTMLFormElement>
   ) {
@@ -23,7 +54,6 @@ function NewProductPage() {
 
     setError("");
 
-    // Validaciones básicas
     if (!sku.trim()) {
       setError("Debe ingresar el SKU.");
       return;
@@ -42,11 +72,17 @@ function NewProductPage() {
     try {
       setGuardando(true);
 
-      await crearProducto({
+      const producto = {
         sku: sku.trim().toUpperCase(),
         nombre: nombre.trim(),
         costo_usd: Number(costoUsd),
-      });
+      };
+
+      if (id) {
+        await actualizarProducto(id, producto);
+      } else {
+        await crearProducto(producto);
+      }
 
       navigate("/productos");
     } catch (error) {
@@ -57,11 +93,19 @@ function NewProductPage() {
     }
   }
 
+  if (cargando) {
+    return (
+      <div className="p-8">
+        Cargando producto...
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold text-slate-800">
-          Nuevo Producto
+          {id ? "Editar Producto" : "Nuevo Producto"}
         </h1>
 
         <button
@@ -85,8 +129,6 @@ function NewProductPage() {
           onSubmit={guardarProducto}
         >
 
-          {/* SKU */}
-
           <div>
             <label className="mb-2 block font-medium">
               SKU
@@ -101,8 +143,6 @@ function NewProductPage() {
             />
           </div>
 
-          {/* Nombre */}
-
           <div>
             <label className="mb-2 block font-medium">
               Nombre del producto
@@ -116,8 +156,6 @@ function NewProductPage() {
               className="w-full rounded-lg border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
             />
           </div>
-
-          {/* Costo */}
 
           <div>
             <label className="mb-2 block font-medium">
@@ -155,6 +193,7 @@ function NewProductPage() {
           </div>
 
         </form>
+
       </div>
     </div>
   );

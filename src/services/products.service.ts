@@ -46,3 +46,48 @@ export async function crearProducto(
     throw error;
   }
 }
+
+export async function obtenerProductoPorId(id: string): Promise<Producto> {
+  const { data, error } = await supabase
+    .from("productos")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+export async function actualizarProducto(
+  id: string,
+  producto: NuevoProducto
+): Promise<void> {
+  const { error } = await supabase
+    .from("productos")
+    .update({
+      sku: producto.sku,
+      nombre: producto.nombre,
+      costo_usd: producto.costo_usd,
+    })
+    .eq("id", id);
+
+  if (error) {
+    throw error;
+  }
+}
+export async function eliminarProducto(
+  id: string
+): Promise<void> {
+
+  const { error } = await supabase
+    .from("productos")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw error;
+  }
+}

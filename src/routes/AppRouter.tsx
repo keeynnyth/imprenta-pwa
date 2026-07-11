@@ -32,6 +32,11 @@ function AppRouter() {
             />
 
             <Route
+              path="/productos/:id"
+             element={<NewProductPage />}
+/>
+
+            <Route
               path="/tasas"
               element={<RatesPage />}
             />
