@@ -1,13 +1,25 @@
-
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import MenuLateral from "../components/layout/MenuLateral";
 
 import DashboardPage from "../pages/Dashboard/DashboardPage";
+
 import ProductsPage from "../pages/Products/ProductsPage";
 import NewProductPage from "../pages/Products/NewProductPage";
+
 import RatesPage from "../pages/Rates/RatesPage";
+
 import SettingsPage from "../pages/Settings/SettingsPage";
+
+import QuotesPage from "../pages/Quotes/QuotesPage";
+import QuotesHistoryPage from "../pages/Quotes/QuotesHistoryPage";
+
+
+import ClientsPage from "../pages/clientes/ClientsPage";
+import QuoteDetailPage from "../pages/Quotes/QuoteDetailPage";
+
+
+import NewClientPage from "../pages/clientes/NewClientPage";
 
 function AppRouter() {
   return (
@@ -19,7 +31,13 @@ function AppRouter() {
         <main className="flex-1 overflow-auto bg-slate-100 p-8">
 
           <Routes>
-            <Route path="/" element={<DashboardPage />} />
+
+            <Route
+              path="/"
+              element={<DashboardPage />}
+            />
+
+            {/* PRODUCTOS */}
 
             <Route
               path="/productos"
@@ -33,13 +51,61 @@ function AppRouter() {
 
             <Route
               path="/productos/:id"
-             element={<NewProductPage />}
+              element={<NewProductPage />}
+            />
+
+            {/* COTIZACIONES */}
+
+            {/* CLIENTES */}
+
+<Route
+  path="/clientes"
+  element={<ClientsPage />}
 />
+
+<Route
+  path="/clientes/nuevo"
+  element={<NewClientPage />}
+/>
+
+<Route
+  path="/clientes/:id"
+  element={<NewClientPage />}
+/>
+
+            <Route
+              path="/cotizaciones"
+              element={<QuotesHistoryPage />}
+            />
+
+            <Route
+              path="/cotizaciones/nueva"
+              element={<QuotesPage />}
+            />
+            <Route
+             path="/cotizaciones/nueva"
+            element={<QuotesPage />}
+            />
+<Route
+  path="/cotizaciones/:id"
+  element={<QuoteDetailPage />}
+/>
+
+            {/* CLIENTES */}
+
+            <Route
+              path="/clientes"
+              element={<ClientsPage />}
+            />
+
+            {/* TASAS */}
 
             <Route
               path="/tasas"
               element={<RatesPage />}
             />
+
+            {/* CONFIGURACIÓN */}
 
             <Route
               path="/configuracion"
@@ -49,6 +115,7 @@ function AppRouter() {
           </Routes>
 
         </main>
+
       </div>
     </BrowserRouter>
   );

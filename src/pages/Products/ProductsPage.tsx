@@ -7,24 +7,33 @@ import {
   eliminarProducto,
 } from "../../services/products.service";
 
+import { obtenerBCV } from "../../services/rates.service";
+
 import type { Producto } from "../../services/products.service";
 
 function ProductsPage() {
   const navigate = useNavigate();
 
   const [productos, setProductos] = useState<Producto[]>([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [bcv, setBcv] = useState(0);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    cargarProductos();
+    cargarPantalla();
   }, []);
 
-  async function cargarProductos() {
+  async function cargarPantalla() {
     try {
       setCargando(true);
 
-      const data = await obtenerProductos();
-      setProductos(data);
+      const [listaProductos, tasaBCV] = await Promise.all([
+        obtenerProductos(),
+        obtenerBCV(),
+      ]);
+
+      setProductos(listaProductos);
+      setBcv(tasaBCV);
     } catch (error) {
       console.error(error);
     } finally {
@@ -37,20 +46,46 @@ function ProductsPage() {
       "¿Está seguro que desea eliminar este producto?"
     );
 
-    if (!confirmar) {
-      return;
-    }
+    if (!confirmar) return;
 
     try {
       await eliminarProducto(id);
-
-      // Recargar la lista
-      await cargarProductos();
+      await cargarPantalla();
     } catch (error) {
       console.error(error);
       alert("No fue posible eliminar el producto.");
     }
   }
+
+  async function copiarPrecio(producto: Producto) {
+    const precioBs = Number(producto.costo_usd) * bcv;
+
+    const texto = `${producto.nombre}
+
+💵 Precio USD: ${Number(producto.costo_usd).toFixed(2)}
+
+🇻🇪 Precio Bs: ${precioBs.toLocaleString("es-VE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+
+    try {
+      await navigator.clipboard.writeText(texto);
+      alert("Precio copiado al portapapeles.");
+    } catch (error) {
+      console.error(error);
+      alert("No fue posible copiar el precio.");
+    }
+  }
+
+  const productosFiltrados = productos.filter((producto) => {
+    const texto = busqueda.toLowerCase();
+
+    return (
+      producto.nombre.toLowerCase().includes(texto) ||
+      producto.sku.toLowerCase().includes(texto)
+    );
+  });
 
   return (
     <div>
@@ -67,13 +102,28 @@ function ProductsPage() {
         </button>
       </div>
 
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Buscar por SKU o nombre..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          className="w-full rounded-lg border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
+        />
+      </div>
+
+      <div className="mb-3 text-sm text-slate-500">
+        Mostrando {productosFiltrados.length} de {productos.length} productos
+      </div>
+
       <div className="overflow-hidden rounded-lg bg-white shadow">
         <table className="min-w-full">
           <thead className="bg-slate-100">
             <tr>
               <th className="px-4 py-3 text-left">SKU</th>
               <th className="px-4 py-3 text-left">Producto</th>
-              <th className="px-4 py-3 text-right">Costo USD</th>
+              <th className="px-4 py-3 text-right">Precio USD</th>
+              <th className="px-4 py-3 text-right">Precio Bs</th>
               <th className="px-4 py-3 text-center">Estado</th>
               <th className="px-4 py-3 text-center">Acciones</th>
             </tr>
@@ -82,24 +132,21 @@ function ProductsPage() {
           <tbody>
             {cargando ? (
               <tr>
-                <td
-                  colSpan={5}
-                  className="p-6 text-center"
-                >
+                <td colSpan={6} className="p-6 text-center">
                   Cargando productos...
                 </td>
               </tr>
-            ) : productos.length === 0 ? (
+            ) : productosFiltrados.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="p-6 text-center text-slate-500"
                 >
-                  No hay productos registrados.
+                  No se encontraron productos.
                 </td>
               </tr>
             ) : (
-              productos.map((producto) => (
+              productosFiltrados.map((producto) => (
                 <tr
                   key={producto.id}
                   className="border-t hover:bg-slate-50"
@@ -113,8 +160,18 @@ function ProductsPage() {
                   </td>
 
                   <td className="px-4 py-3 text-right">
-                    USD{" "}
-                    {Number(producto.costo_usd).toFixed(2)}
+                    USD {Number(producto.costo_usd).toFixed(2)}
+                  </td>
+
+                  <td className="px-4 py-3 text-right font-semibold text-green-700">
+                    Bs{" "}
+                    {(Number(producto.costo_usd) * bcv).toLocaleString(
+                      "es-VE",
+                      {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      }
+                    )}
                   </td>
 
                   <td className="px-4 py-3 text-center">
@@ -132,9 +189,7 @@ function ProductsPage() {
                   <td className="space-x-2 px-4 py-3 text-center">
                     <button
                       onClick={() =>
-                        navigate(
-                          `/productos/${producto.id}`
-                        )
+                        navigate(`/productos/${producto.id}`)
                       }
                       className="rounded bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600"
                     >
@@ -142,12 +197,17 @@ function ProductsPage() {
                     </button>
 
                     <button
-                      onClick={() =>
-                        eliminar(producto.id)
-                      }
+                      onClick={() => eliminar(producto.id)}
                       className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
                     >
                       Eliminar
+                    </button>
+
+                    <button
+                      onClick={() => copiarPrecio(producto)}
+                      className="rounded bg-sky-600 px-3 py-1 text-white hover:bg-sky-700"
+                    >
+                      Copiar
                     </button>
                   </td>
                 </tr>

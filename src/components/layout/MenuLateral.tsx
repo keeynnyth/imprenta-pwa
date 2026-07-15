@@ -11,43 +11,63 @@ function MenuLateral() {
       </div>
 
       <nav>
-       <ul className="space-y-2 px-4">
-  <li>
-    <Link
-      to="/"
-      className="block rounded p-2 hover:bg-slate-700"
-    >
-      🏠 Inicio
-    </Link>
-  </li>
+        <ul className="space-y-2 px-4">
 
-  <li>
-    <Link
-      to="/productos"
-      className="block rounded p-2 hover:bg-slate-700"
-    >
-      📦 Productos
-    </Link>
-  </li>
+          <li>
+            <Link
+              to="/"
+              className="block rounded p-2 hover:bg-slate-700"
+            >
+              🏠 Inicio
+            </Link>
+          </li>
 
-  <li>
-    <Link
-      to="/tasas"
-      className="block rounded p-2 hover:bg-slate-700"
-    >
-      💲 Tasas
-    </Link>
-  </li>
+          <li>
+            <Link
+              to="/productos"
+              className="block rounded p-2 hover:bg-slate-700"
+            >
+              📦 Productos
+            </Link>
+          </li>
 
-  <li>
-    <Link
-      to="/configuracion"
-      className="block rounded p-2 hover:bg-slate-700"
-    >
-      ⚙️ Configuración
-    </Link>
-  </li>
-</ul>
+          <li>
+            <Link
+              to="/cotizaciones"
+              className="block rounded p-2 hover:bg-slate-700"
+            >
+              📋 Cotizaciones
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/tasas"
+              className="block rounded p-2 hover:bg-slate-700"
+            >
+              💲 Tasas
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/clientes"
+              className="block rounded p-2 hover:bg-slate-700"
+            >
+              👥 Clientes
+            </Link>
+          </li>
+
+          <li>
+            <Link
+              to="/configuracion"
+              className="block rounded p-2 hover:bg-slate-700"
+            >
+              ⚙️ Configuración
+            </Link>
+          </li>
+
+        </ul>
       </nav>
     </aside>
   );

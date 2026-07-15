@@ -91,3 +91,16 @@ export async function eliminarProducto(
     throw error;
   }
 }
+export async function obtenerProductosActivos(): Promise<Producto[]> {
+  const { data, error } = await supabase
+    .from("productos")
+    .select("*")
+    .eq("activo", true)
+    .order("nombre");
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
+}
