@@ -7,6 +7,8 @@ export interface Tasas {
   binance: number;
   factor_binance: number;
   updated_at: string;
+  ultima_actualizacion: string;
+  origen: string;
 }
 
 export async function obtenerTasas(): Promise<Tasas> {
@@ -40,6 +42,16 @@ export async function actualizarTasas(
       updated_at: new Date().toISOString(),
     })
     .eq("id", tasas.id);
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function actualizarTasasAutomaticamente(): Promise<void> {
+  const { error } = await supabase.functions.invoke(
+    "actualizar-tasas"
+  );
 
   if (error) {
     throw error;
