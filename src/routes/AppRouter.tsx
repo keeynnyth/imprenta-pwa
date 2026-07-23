@@ -21,6 +21,10 @@ import QuoteDetailPage from "../pages/Quotes/QuoteDetailPage";
 
 import NewClientPage from "../pages/clientes/NewClientPage";
 
+import WorkOrdersPage from "../pages/WorkOrders/WorkOrdersPage";
+
+import WorkOrderDetailPage from "../pages/WorkOrders/WorkOrderDetailPage";
+
 function AppRouter() {
   return (
     <BrowserRouter>
@@ -90,7 +94,16 @@ function AppRouter() {
   path="/cotizaciones/:id"
   element={<QuoteDetailPage />}
 />
+{/* ÓRDENES DE TRABAJO */}
 
+<Route
+  path="/ordenes-trabajo"
+  element={<WorkOrdersPage />}
+/>
+<Route
+  path="/ordenes-trabajo/:id"
+  element={<WorkOrderDetailPage />}
+/>
             {/* CLIENTES */}
 
             <Route

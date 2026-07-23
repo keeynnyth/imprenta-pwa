@@ -8,6 +8,7 @@
 
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import sello from "../../assets/images/logo-redondo-agua.png";
 
 import logo from "../../assets/images/logo.png";
 
@@ -20,32 +21,39 @@ export interface PdfProducto {
   subtotalBs: number;
 }
 
-export interface PdfCotizacion {
+export interface PdfOrdenTrabajo {
   numero: string;
 
   fecha: string;
+
+  fechaEntrega?: string;
 
   cliente: string;
 
   documento: string;
 
-  observaciones: string;
+  observaciones?: string;
 
-  subtotalUsd: number;
-  subtotalBs: number;
-
-  ivaUsd: number;
-  ivaBs: number;
-
-  totalUsd: number;
   totalBs: number;
+
+  abono?: number;
+
+  saldoPendiente?: number;
 
   productos: PdfProducto[];
 }
-
-export function generarPdfCotizacion(
-  cotizacion: PdfCotizacion
+export function generarPdfOrdenTrabajo(
+  orden: PdfOrdenTrabajo
 ) {
+    function formatearFecha(fecha?: string) {
+  if (!fecha) return "-";
+
+  return new Date(fecha).toLocaleDateString("es-VE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
 
   const doc = new jsPDF({
     orientation: "portrait",
@@ -211,18 +219,18 @@ y += 10;
   doc.setTextColor(0);
 
   doc.text(
-    "COTIZACIÓN",
-    margen,
-    y
-  );
+  "ORDEN DE TRABAJO",
+  margen,
+  y
+);
 
-  doc.setFontSize(12);
+doc.setFontSize(12);
 
-  doc.text(
-    cotizacion.numero,
-    150,
-    y
-  );
+doc.text(
+  orden.numero,
+  150,
+  y
+);
 
   y += 10;
 
@@ -237,33 +245,35 @@ y += 10;
     "normal"
   );
 
-  doc.text(
-    `Fecha: ${cotizacion.fecha}`,
-    margen,
-    y
-  );
+ doc.text(
+  `Fecha: ${formatearFecha(orden.fecha)}`,
+  margen,
+  y
+);
 
-  y += 7;
+doc.text(
+  `Entrega: ${formatearFecha(orden.fechaEntrega)}`,
+  120,
+  y
+);
 
-  doc.text(
-    `Cliente: ${
-      cotizacion.cliente || "-"
-    }`,
-    margen,
-    y
-  );
+y += 7;
 
-  y += 7;
+doc.text(
+  `Cliente: ${orden.cliente || "-"}`,
+  margen,
+  y
+);
 
-  doc.text(
-    `Documento: ${
-      cotizacion.documento || "-"
-    }`,
-    margen,
-    y
-  );
+y += 7;
 
-  y += 10;
+doc.text(
+  `Documento: ${orden.documento || "-"}`,
+  margen,
+  y
+);
+
+y += 10;
 
   //====================================================
   // AQUÍ CONTINUARÁ LA TABLA
@@ -278,26 +288,17 @@ y += 10;
     startY: y,
 
     head: [[
-      "Producto",
-      "Cantidad",
-      "USD",
-      "Bs"
-    ]],
+  "Producto",
+  "Cantidad"
+]],
 
-    body: cotizacion.productos.map((producto) => [
+    body: orden.productos.map((producto) => [
 
-      producto.nombre,
+  producto.nombre,
 
-      producto.cantidad.toString(),
+  producto.cantidad.toString(),
 
-      `$ ${producto.subtotalUsd.toFixed(2)}`,
-
-      producto.subtotalBs.toLocaleString("es-VE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-
-    ]),
+]),
 
     theme: "grid",
 
@@ -333,37 +334,16 @@ y += 10;
 
     columnStyles: {
 
-      0: {
+  0: {
+    cellWidth: 145,
+  },
 
-        cellWidth: 90,
+  1: {
+    cellWidth: 40,
+    halign: "center",
+  },
 
-      },
-
-      1: {
-
-        cellWidth: 25,
-
-        halign: "center",
-
-      },
-
-      2: {
-
-        cellWidth: 30,
-
-        halign: "right",
-
-      },
-
-      3: {
-
-        cellWidth: 40,
-
-        halign: "right",
-
-      }
-
-    },
+},
 
     alternateRowStyles: {
 
@@ -377,141 +357,109 @@ y += 10;
   // POSICIÓN DESPUÉS DE LA TABLA
   //====================================================
 
-  y = (doc as any).lastAutoTable.finalY + 12;
+y = (doc as any).lastAutoTable.finalY + 12;
 
-  //====================================================
-  // TOTALES
-  //====================================================
+//====================================================
+// RESUMEN
+//====================================================
 
-  doc.setFont(
-    "helvetica",
-    "bold"
-  );
+doc.setFont(
+  "helvetica",
+  "bold"
+);
 
-  doc.setFontSize(11);
+doc.setFontSize(12);
 
-  doc.text(
-    "Subtotal USD",
-    120,
-    y
-  );
+doc.text(
+  "Total",
+  120,
+  y
+);
 
-  doc.text(
-    `$ ${cotizacion.subtotalUsd.toFixed(2)}`,
-    195,
-    y,
-    {
-      align: "right"
-    }
-  );
+doc.text(
+  `Bs ${orden.totalBs.toLocaleString("es-VE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`,
+  195,
+  y,
+  {
+    align: "right",
+  }
+);
 
-  y += 7;
+y += 8;
 
-  doc.setFont(
-    "helvetica",
-    "normal"
-  );
+doc.setFont(
+  "helvetica",
+  "normal"
+);
 
-  doc.text(
-    "Subtotal Bs",
-    120,
-    y
-  );
+doc.text(
+  "Abono recibido",
+  120,
+  y
+);
 
-  doc.text(
-    cotizacion.subtotalBs.toLocaleString("es-VE",{
-      minimumFractionDigits:2,
-      maximumFractionDigits:2,
-    }),
-    195,
-    y,
-    {
-      align:"right"
-    }
-  );
+doc.text(
+  `Bs ${(orden.abono ?? 0).toLocaleString("es-VE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`,
+  195,
+  y,
+  {
+    align: "right",
+  }
+);
+y += 8;
 
-  y += 7;
+doc.setFont(
+  "helvetica",
+  "bold"
+);
 
-  doc.text(
-    "IVA",
-    120,
-    y
-  );
+doc.text(
+  "Saldo pendiente",
+  120,
+  y
+);
 
-  doc.text(
-    cotizacion.ivaBs.toLocaleString("es-VE",{
-      minimumFractionDigits:2,
-      maximumFractionDigits:2,
-    }),
-    195,
-    y,
-    {
-      align:"right"
-    }
-  );
+doc.text(
+  `Bs ${(orden.saldoPendiente ?? (orden.totalBs - (orden.abono ?? 0))).toLocaleString("es-VE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`,
+  195,
+  y,
+  {
+    align: "right",
+  }
+);
 
-  y += 10;
+doc.setFont(
+  "helvetica",
+  "normal"
+);
 
-  doc.setDrawColor(180);
+y += 14;
 
-  doc.line(
-    120,
-    y-4,
-    195,
-    y-4
-  );
+doc.setFontSize(9);
 
-  doc.setFont(
-    "helvetica",
-    "bold"
-  );
+doc.setTextColor(90);
 
-  doc.setFontSize(14);
+doc.text(
+  "* En caso de realizar un abono parcial, el saldo pendiente quedará sujeto a la variación del tipo de cambio vigente al momento de efectuar el pago restante.",
+  margen,
+  y,
+  {
+    maxWidth: 180,
+  }
+);
 
-  doc.text(
-    "TOTAL USD",
-    120,
-    y+2
-  );
+doc.setTextColor(0);
 
-  doc.text(
-    `$ ${cotizacion.totalUsd.toFixed(2)}`,
-    195,
-    y+2,
-    {
-      align:"right"
-    }
-  );
-
-  y += 9;
-
-  doc.setTextColor(
-    colorPrincipal[0],
-    colorPrincipal[1],
-    colorPrincipal[2]
-  );
-
-  doc.text(
-    "TOTAL Bs",
-    120,
-    y+2
-  );
-
-  doc.text(
-    cotizacion.totalBs.toLocaleString("es-VE",{
-      minimumFractionDigits:2,
-      maximumFractionDigits:2,
-    }),
-    195,
-    y+2,
-    {
-      align:"right"
-    }
-  );
-
-  doc.setTextColor(0);
-
-  y += 18;
+y += 18;
 
   //====================================================
   // EN LA PARTE 3
@@ -523,7 +471,7 @@ y += 10;
   // OBSERVACIONES
   //====================================================
 
-  if (cotizacion.observaciones?.trim()) {
+  if (orden.observaciones?.trim()) {
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(11);
@@ -542,7 +490,7 @@ y += 10;
     doc.setFontSize(12);
 
     const observaciones = doc.splitTextToSize(
-      cotizacion.observaciones,
+      orden.observaciones,
       180
     );
 
@@ -559,137 +507,79 @@ y += 10;
   //====================================================
   // LÍNEA SEPARADORA
   //====================================================
+//====================================================
+// FIRMAS
+//====================================================
 
-  doc.setDrawColor(
-    colorLinea[0],
-    colorLinea[1],
-    colorLinea[2]
-  );
+//====================================================
+// SELLO
+//====================================================
 
-  doc.line(
-    margen,
-    y,
-    195,
-    y
-  );
-
-  y += 10;
-
-  //====================================================
-  // MENSAJE AL CLIENTE
-  //====================================================
-
-doc.setFont("times", "italic");
-
-doc.setFontSize(18);
-
-doc.setTextColor(
-  colorPrincipal[0],
-  colorPrincipal[1],
-  colorPrincipal[2]
+doc.addImage(
+  sello,
+  "PNG",
+  140,
+  y - 10,
+  50,
+  50
 );
 
-doc.text(
-  "¡Gracias por preferirnos!",
+y += 40;
+
+//====================================================
+// INFORMACIÓN DE CONTACTO
+//====================================================
+
+doc.setDrawColor(
+  colorLinea[0],
+  colorLinea[1],
+  colorLinea[2]
+);
+
+doc.line(
   margen,
+  y,
+  195,
   y
 );
-  y += 8;
 
-  doc.setFont(
-    "helvetica",
-    "normal"
-  );
-
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
+y += 8;
 
 doc.setFontSize(9);
 
-doc.setTextColor(0);
-
-y -= 12;
-
- doc.text(
-  "Esta cotización tiene una vigencia de 1 día.",
-  195,
-  y,
-  {
-    align: "right",
-  }
+doc.setFont(
+  "helvetica",
+  "normal"
 );
 
-y += 6;
+doc.setTextColor(
+  colorGris[0],
+  colorGris[1],
+  colorGris[2]
+);
 
 doc.text(
-  "Si requiere factura fiscal, se adicionará el IVA correspondiente.",
+  "WhatsApp: (0424) 606-3973",
+  margen,
+  y
+);
+
+doc.text(
+  "Instagram: @lagographi",
+  90,
+  y
+);
+
+doc.text(
+  "lagographi@gmail.com",
   195,
   y,
   {
-    align: "right",
+    align: "right"
   }
 );
-  y += 12;
 
-  doc.text(
-  "*En caso de hacer un abono parcial, el saldo restante quedará sujeto a las variaciones del tipo de cambio del dia en que este se realice.",
-  195,
-  y,
-  {
-    align: "right",
-     
-  }
-);
-  y += 18;
-
-  //====================================================
-  // INFORMACIÓN DE CONTACTO
-  //====================================================
-
-  doc.setDrawColor(
-    colorLinea[0],
-    colorLinea[1],
-    colorLinea[2]
-  );
-
-  doc.line(
-    margen,
-    y,
-    195,
-    y
-  );
-
-  y += 8;
-
-  doc.setFontSize(9);
-
-  doc.setTextColor(
-    colorGris[0],
-    colorGris[1],
-    colorGris[2]
-  );
-
-  doc.text(
-    "WhatsApp: (0424) 606-3973",
-    margen,
-    y
-  );
-
-  doc.text(
-    "Instagram: @lagographi",
-    90,
-    y
-  );
-
-  doc.text(
-    "lagographi@gmail.com",
-    195,
-    y,
-    {
-      align: "right"
-    }
-  );
-
+doc.setTextColor(0);
   //====================================================
   // CONTINÚA EN LA PARTE 4
   //====================================================
@@ -697,6 +587,6 @@ doc.text(
   // GUARDAR PDF
   //====================================================
 
-  doc.save(`${cotizacion.numero}.pdf`);
+  doc.save(`$orden.numero}.pdf`);
 
 }

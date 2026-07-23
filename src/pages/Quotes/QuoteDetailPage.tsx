@@ -1,10 +1,15 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import Modal from "../../components/ui/Modal";
 
 import {
   obtenerCotizacionPorId,
 } from "../../services/quotes.service";
+
+import {
+  crearOrdenTrabajo,
+} from "../../services/ordenes-trabajo.service";
 
 import {
   generarPdfCotizacion,
@@ -16,7 +21,16 @@ function QuoteDetailPage() {
 
   const [cotizacion, setCotizacion] = useState<any>(null);
   const [cargando, setCargando] = useState(true);
-
+  const [modalAprobacionAbierto, setModalAprobacionAbierto] = useState(false);
+  const [pagoCompleto, setPagoCompleto] = useState(false);
+  const [abonoBs, setAbonoBs] = useState("");
+  const [observacionesProduccion, setObservacionesProduccion] = useState("");
+  const [fechaEntrega, setFechaEntrega] = useState("");
+ const saldoPendiente =
+  Number(cotizacion?.total_bs ?? 0) - (Number(abonoBs) || 0);
+  const saldoPendienteUsd =
+  Number(cotizacion?.total_usd ?? 0) *
+  (saldoPendiente / Number(cotizacion?.total_bs ?? 1));
   useEffect(() => {
     if (id) {
       cargarCotizacion(id);
@@ -29,11 +43,16 @@ function QuoteDetailPage() {
 
       const data = await obtenerCotizacionPorId(id);
 
+      console.log(data);
+
       setCotizacion(data);
-    } catch (error) {
-      console.error(error);
-      alert("No fue posible cargar la cotización.");
-    } finally {
+    }catch (error: any) {
+  console.error(error);
+
+  alert(
+    JSON.stringify(error, null, 2)
+  );
+} finally {
       setCargando(false);
     }
   }
@@ -108,6 +127,32 @@ function QuoteDetailPage() {
     });
   }
 
+  async function aprobarCotizacion() {
+  if (!fechaEntrega) {
+    alert("Debe seleccionar una fecha de entrega.");
+    return;
+  }
+
+  try {
+    console.log(cotizacion);
+    await crearOrdenTrabajo({
+      cotizacion_id: cotizacion.id,
+      cliente_id: cotizacion.cliente_id,
+      fecha_entrega: fechaEntrega,
+      total: Number(cotizacion.total_bs),
+      abono: Number(abonoBs),
+      observaciones: observacionesProduccion,
+    });
+
+    alert("Orden de Trabajo creada correctamente.");
+
+    setModalAprobacionAbierto(false);
+  } catch (error) {
+    console.error(error);
+    alert("No fue posible crear la Orden de Trabajo.");
+  }
+}
+
   if (cargando) {
     return (
       <div className="p-6">
@@ -147,13 +192,19 @@ function QuoteDetailPage() {
         </h1>
 
         <div className="flex gap-3">
-
+         
           <button
             onClick={descargarPdf}
             className="rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
           >
             PDF
           </button>
+<button
+  onClick={() => setModalAprobacionAbierto(true)}
+  className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+>
+  Aprobar cotización
+</button>
 
           <button
             onClick={() =>
@@ -387,9 +438,134 @@ function QuoteDetailPage() {
         )}
 
       </div>
+           <Modal
+        abierto={modalAprobacionAbierto}
+        titulo="Aprobar cotización"
+        onCerrar={() => setModalAprobacionAbierto(false)}
+      >
+        <div className="space-y-4">
+          <div className="rounded-lg bg-slate-100 p-3">
 
+  <div className="flex justify-between">
+    <span>Total de la cotización</span>
+
+    <strong>
+      {Number(cotizacion.total_bs).toLocaleString("es-VE", {
+        minimumFractionDigits: 2,
+      })} Bs
+    </strong>
+  </div>
+  <div className="mt-2 flex justify-between border-t pt-2">
+  <span>Saldo pendiente</span>
+
+  <strong className="text-orange-600">
+    {saldoPendiente.toLocaleString("es-VE", {
+      minimumFractionDigits: 2,
+    })} Bs
+  </strong>
+</div>
+<div className="mt-2 flex justify-between">
+  <span>Saldo pendiente (USD)</span>
+
+  <strong className="text-orange-600">
+    {saldoPendienteUsd.toFixed(2)} USD
+  </strong>
+</div>
+</div>
+
+  <div>
+    <div className="flex items-center gap-2">
+
+<input
+  id="pagoCompleto"
+  type="checkbox"
+  checked={pagoCompleto}
+  onChange={(e) => {
+    const checked = e.target.checked;
+
+    setPagoCompleto(checked);
+
+    if (checked) {
+      setAbonoBs(String(cotizacion.total_bs));
+    } else {
+      setAbonoBs("");
+    }
+  }}
+/>
+
+  <label
+    htmlFor="pagoCompleto"
+    className="font-medium"
+  >
+    Cliente pagó el total
+  </label>
+
+</div>
+    <label className="mb-1 block font-medium">
+      Fecha de entrega
+    </label>
+
+    <input
+  type="date"
+  value={fechaEntrega}
+  onChange={(e) => setFechaEntrega(e.target.value)}
+  className="w-full rounded-lg border p-2"
+/>
+  </div>
+<div>
+  <label className="mb-1 block font-medium">
+    Abono recibido
+  </label>
+
+<input
+  type="number"
+  min="0"
+  step="0.01"
+  placeholder="0.00"
+  value={abonoBs}
+  onChange={(e) => setAbonoBs(e.target.value)}
+  disabled={pagoCompleto}
+  className="w-full rounded-lg border p-2"
+/>
+</div>
+<div>
+  <label className="mb-1 block font-medium">
+    Observaciones de producción
+  </label>
+
+  <textarea
+    rows={3}
+    value={observacionesProduccion}
+    onChange={(e) =>
+      setObservacionesProduccion(e.target.value)
+    }
+    placeholder="Ej.: Entregar antes de las 3:00 pm, papel mate, llamar al cliente..."
+    className="w-full rounded-lg border p-2"
+  />
+</div>
+<div className="mt-6 flex justify-end gap-3">
+
+  <button
+    type="button"
+    onClick={() => setModalAprobacionAbierto(false)}
+    className="rounded-lg border border-slate-300 px-4 py-2 hover:bg-slate-100"
+  >
+    Cancelar
+  </button>
+
+  <button
+  type="button"
+  onClick={aprobarCotizacion}
+  className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+>
+  Crear Orden de Trabajo
+</button>
+
+</div>
+</div>
+      </Modal>
     </div>
   );
 }
-
-export default QuoteDetailPage;
+;
+export default QuoteDetailPage

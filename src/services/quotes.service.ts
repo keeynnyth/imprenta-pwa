@@ -167,7 +167,13 @@ export async function obtenerCotizacionPorId(id: string) {
           nombre,
           sku
         )
-      )
+      ),
+        clientes (
+  nombre,
+  documento,
+  telefono,
+  correo
+)
     `)
     .eq("id", id)
     .single();

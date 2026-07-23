@@ -41,6 +41,15 @@ function MenuLateral() {
           </li>
 
           <li>
+  <Link
+    to="/ordenes-trabajo"
+    className="block rounded p-2 hover:bg-slate-700"
+  >
+    🛠️ Órdenes de Trabajo
+  </Link>
+</li>
+
+          <li>
             <Link
               to="/tasas"
               className="block rounded p-2 hover:bg-slate-700"
