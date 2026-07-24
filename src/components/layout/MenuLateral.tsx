@@ -1,7 +1,14 @@
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../../config/supabase";
 
 function MenuLateral() {
+  const navigate = useNavigate();
+
+const cerrarSesion = async () => {
+  await supabase.auth.signOut();
+  navigate("/login", { replace: true });
+};
   return (
     <aside className="w-64 bg-slate-800 text-white">
       <div className="p-6">
@@ -15,7 +22,7 @@ function MenuLateral() {
 
           <li>
             <Link
-              to="/"
+             to="/dashboard"
               className="block rounded p-2 hover:bg-slate-700"
             >
               🏠 Inicio
@@ -68,6 +75,15 @@ function MenuLateral() {
           </li>
 
           <li>
+  <Link
+    to="/ingresos"
+    className="block rounded p-2 hover:bg-slate-700"
+  >
+    💰 Ingresos
+  </Link>
+</li>
+
+          <li>
             <Link
               to="/configuracion"
               className="block rounded p-2 hover:bg-slate-700"
@@ -75,7 +91,14 @@ function MenuLateral() {
               ⚙️ Configuración
             </Link>
           </li>
-
+<li>
+  <button
+    onClick={cerrarSesion}
+    className="block w-full rounded p-2 text-left hover:bg-slate-700"
+  >
+    🚪 Cerrar sesión
+  </button>
+</li>
         </ul>
       </nav>
     </aside>

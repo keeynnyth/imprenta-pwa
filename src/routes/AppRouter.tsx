@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import MenuLateral from "../components/layout/MenuLateral";
 
@@ -25,7 +25,15 @@ import WorkOrdersPage from "../pages/WorkOrders/WorkOrdersPage";
 
 import WorkOrderDetailPage from "../pages/WorkOrders/WorkOrderDetailPage";
 
+import LoginPage from "../pages/Login/LoginPage";
+import ProtectedRoute from "./ProtectedRoute";
+import IncomeFormPage from "../pages/Administration/IncomeFormPage";
+
+import IncomesPage from "../pages/Administration/IncomesPage";
+
+
 function AppRouter() {
+
   return (
     <BrowserRouter>
       <div className="flex h-screen">
@@ -37,9 +45,50 @@ function AppRouter() {
           <Routes>
 
             <Route
-              path="/"
-              element={<DashboardPage />}
-            />
+  path="/login"
+  element={<LoginPage />}
+/>
+
+           <Route
+  path="/"
+  element={<Navigate to="/login" replace />}
+/>
+
+<Route
+  path="/dashboard"
+  element={
+    <ProtectedRoute>
+      <DashboardPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/ingresos"
+  element={
+    <ProtectedRoute>
+      <IncomesPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/ingresos/nuevo"
+  element={
+    <ProtectedRoute>
+      <IncomeFormPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/ingresos/:id"
+  element={
+    <ProtectedRoute>
+      <IncomeFormPage />
+    </ProtectedRoute>
+  }
+/>
 
             {/* PRODUCTOS */}
 
