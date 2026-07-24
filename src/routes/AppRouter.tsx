@@ -31,6 +31,9 @@ import IncomeFormPage from "../pages/Administration/IncomeFormPage";
 
 import IncomesPage from "../pages/Administration/IncomesPage";
 
+import ExpensesPage from "../pages/Administration/ExpensesPage";
+import ExpenseFormPage from "../pages/Administration/ExpenseFormPage";
+
 
 function AppRouter() {
 
@@ -173,7 +176,32 @@ function AppRouter() {
               path="/configuracion"
               element={<SettingsPage />}
             />
+<Route
+  path="/egresos"
+  element={
+    <ProtectedRoute>
+      <ExpensesPage />
+    </ProtectedRoute>
+  }
+/>
 
+<Route
+  path="/egresos/nuevo"
+  element={
+    <ProtectedRoute>
+      <ExpenseFormPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/egresos/:id"
+  element={
+    <ProtectedRoute>
+      <ExpenseFormPage />
+    </ProtectedRoute>
+  }
+/>
           </Routes>
 
         </main>

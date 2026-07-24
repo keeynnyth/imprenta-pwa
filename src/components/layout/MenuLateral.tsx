@@ -82,6 +82,14 @@ const cerrarSesion = async () => {
     💰 Ingresos
   </Link>
 </li>
+<li>
+  <Link
+    to="/egresos"
+    className="block rounded p-2 hover:bg-slate-700"
+  >
+    💸 Egresos
+  </Link>
+</li>
 
           <li>
             <Link
