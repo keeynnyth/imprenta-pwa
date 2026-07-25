@@ -7,6 +7,11 @@ export interface Ingreso {
   monto: number;
   moneda: string;
   metodo_pago: string;
+
+  tasa_utilizada: number;
+  monto_usd: number;
+  monto_bs: number;
+
   observaciones?: string;
 }
 

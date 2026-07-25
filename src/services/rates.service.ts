@@ -1,4 +1,3 @@
-
 import { supabase } from "../config/supabase";
 
 export interface Tasas {
@@ -6,6 +5,10 @@ export interface Tasas {
   bcv: number;
   binance: number;
   factor_binance: number;
+
+  // Calculado en memoria, no existe en la BD
+  tasa_efectiva: number;
+
   updated_at: string;
   ultima_actualizacion: string;
   origen: string;
@@ -22,7 +25,12 @@ export async function obtenerTasas(): Promise<Tasas> {
     throw error;
   }
 
-  return data;
+  return {
+    ...data,
+    tasa_efectiva: Number(
+      (data.binance * data.factor_binance).toFixed(4)
+    ),
+  };
 }
 
 export async function obtenerBCV(): Promise<number> {
