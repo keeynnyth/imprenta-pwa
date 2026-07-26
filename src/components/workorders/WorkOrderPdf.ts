@@ -31,6 +31,9 @@ export interface PdfOrdenTrabajo {
   cliente: string;
 
   documento: string;
+  telefono: string;
+
+correo: string;
 
   observaciones?: string;
 
@@ -269,6 +272,22 @@ y += 7;
 
 doc.text(
   `Documento: ${orden.documento || "-"}`,
+  margen,
+  y
+);
+
+y += 7;
+
+doc.text(
+  `Teléfono: ${orden.telefono || "-"}`,
+  margen,
+  y
+);
+
+y += 7;
+
+doc.text(
+  `Correo: ${orden.correo || "-"}`,
   margen,
   y
 );
@@ -587,6 +606,6 @@ doc.setTextColor(0);
   // GUARDAR PDF
   //====================================================
 
-  doc.save(`$orden.numero}.pdf`);
+  doc.save(`${orden.numero}.pdf`);
 
 }

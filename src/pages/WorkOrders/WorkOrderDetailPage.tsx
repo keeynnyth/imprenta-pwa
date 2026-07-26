@@ -66,6 +66,11 @@ function descargarPdf() {
     cliente: orden.cotizaciones.cliente,
 
     documento: orden.cotizaciones.documento,
+    telefono:
+  orden.cotizaciones.clientes?.telefono ?? "",
+
+correo:
+  orden.cotizaciones.clientes?.correo ?? "",
 
     observaciones: orden.observaciones,
 
@@ -164,7 +169,7 @@ function descargarPdf() {
         <div className="mb-6">
 
   <p className="text-sm text-slate-500">
-    Cliente
+    Datos del cliente
   </p>
 
   <p className="text-lg font-semibold">
@@ -174,6 +179,14 @@ function descargarPdf() {
   <p className="text-slate-600">
     {orden.cotizaciones.documento}
   </p>
+
+  <p className="text-slate-600">
+  {orden.cotizaciones.clientes?.telefono || "-"}
+</p>
+
+<p className="text-slate-600">
+  {orden.cotizaciones.clientes?.correo || "-"}
+</p>
 
 </div>
 

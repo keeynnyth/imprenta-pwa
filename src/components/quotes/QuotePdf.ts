@@ -28,6 +28,9 @@ export interface PdfCotizacion {
   cliente: string;
 
   documento: string;
+  telefono: string;
+
+correo: string;
 
   observaciones: string;
 
@@ -255,15 +258,35 @@ y += 10;
 
   y += 7;
 
-  doc.text(
-    `Documento: ${
-      cotizacion.documento || "-"
-    }`,
-    margen,
-    y
-  );
+ doc.text(
+  `Documento: ${
+    cotizacion.documento || "-"
+  }`,
+  margen,
+  y
+);
 
-  y += 10;
+y += 7;
+
+doc.text(
+  `Teléfono: ${
+    cotizacion.telefono || "-"
+  }`,
+  margen,
+  y
+);
+
+y += 7;
+
+doc.text(
+  `Correo: ${
+    cotizacion.correo || "-"
+  }`,
+  margen,
+  y
+);
+
+y += 10;
 
   //====================================================
   // AQUÍ CONTINUARÁ LA TABLA
@@ -696,7 +719,25 @@ doc.text(
     //====================================================
   // GUARDAR PDF
   //====================================================
+const totalPaginas = doc.getNumberOfPages();
 
+for (let pagina = 1; pagina <= totalPaginas; pagina++) {
+  doc.setPage(pagina);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+
+  doc.setTextColor(120);
+
+  doc.text(
+    `Página ${pagina} de ${totalPaginas}`,
+    pageWidth - 15,
+    doc.internal.pageSize.getHeight() - 8,
+    {
+      align: "right",
+    }
+  );
+}
   doc.save(`${cotizacion.numero}.pdf`);
 
 }

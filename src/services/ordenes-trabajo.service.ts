@@ -55,6 +55,12 @@ export async function obtenerOrdenTrabajoPorId(
     numero,
     cliente,
     documento,
+
+    clientes (
+      telefono,
+      correo
+    ),
+
     detalle_cotizacion (
       id,
       cantidad,

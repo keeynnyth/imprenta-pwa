@@ -184,3 +184,19 @@ export async function obtenerCotizacionPorId(id: string) {
 
   return data;
 }
+
+export async function actualizarEstadoCotizacion(
+  id: string,
+  estado: string
+) {
+  const { error } = await supabase
+    .from("cotizaciones")
+    .update({
+      estado,
+    })
+    .eq("id", id);
+
+  if (error) {
+    throw error;
+  }
+}

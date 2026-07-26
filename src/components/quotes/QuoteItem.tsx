@@ -6,7 +6,7 @@ import {
   type Producto,
 } from "../../services/products.service";
 
-import { obtenerBCV } from "../../services/rates.service";
+
 
 interface QuoteItemData {
   productoId: string;
@@ -35,7 +35,7 @@ function QuoteItem({
 }: Props) {
   const [productos, setProductos] = useState<Producto[]>([]);
   const [productoId, setProductoId] = useState("");
-  const [bcv, setBcv] = useState(0);
+  
 
   const [cantidad, setCantidad] = useState(1);
 
@@ -55,13 +55,9 @@ function QuoteItem({
 
   async function cargarDatos() {
     try {
-      const [listaProductos, tasaBCV] = await Promise.all([
-        obtenerProductosActivos(),
-        obtenerBCV(),
-      ]);
+      const listaProductos = await obtenerProductosActivos();
 
-      setProductos(listaProductos);
-      setBcv(tasaBCV);
+setProductos(listaProductos);
     } catch (error) {
       console.error(error);
     }
@@ -80,11 +76,11 @@ function QuoteItem({
       return;
     }
 
-    const usd = Number(producto.costo_usd);
-    const bs = usd * bcv;
+    const usd = Number(producto.usd_oficial);
+const bs = Number(producto.precio_bs);
 
-    setPrecioUsd(usd);
-    setPrecioBs(bs);
+setPrecioUsd(usd);
+setPrecioBs(bs);
   }
 
 function calcularSubtotales() {

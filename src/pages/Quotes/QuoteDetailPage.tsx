@@ -5,6 +5,7 @@ import Modal from "../../components/ui/Modal";
 
 import {
   obtenerCotizacionPorId,
+  actualizarEstadoCotizacion,
 } from "../../services/quotes.service";
 
 import {
@@ -70,6 +71,12 @@ function QuoteDetailPage() {
       cliente: cotizacion.cliente ?? "",
 
       documento: cotizacion.documento ?? "",
+
+      telefono:
+  cotizacion.clientes?.telefono ?? "",
+
+correo:
+  cotizacion.clientes?.correo ?? "",
 
       observaciones:
         cotizacion.observaciones ?? "",
@@ -144,6 +151,11 @@ function QuoteDetailPage() {
       observaciones: observacionesProduccion,
     });
 
+    await actualizarEstadoCotizacion(
+  cotizacion.id,
+  "Aprobada"
+);
+await cargarCotizacion(cotizacion.id);
     alert("Orden de Trabajo creada correctamente.");
 
     setModalAprobacionAbierto(false);
@@ -221,7 +233,7 @@ function QuoteDetailPage() {
 
       <div className="rounded-lg bg-white p-6 shadow">
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 
           <div>
             <p className="text-sm text-slate-500">
@@ -255,7 +267,27 @@ function QuoteDetailPage() {
             </p>
           </div>
 
+          
           <div>
+  <p className="text-sm text-slate-500">
+    Teléfono
+  </p>
+
+  <p className="font-semibold">
+    {cotizacion.clientes?.telefono || "-"}
+  </p>
+</div>
+
+<div>
+  <p className="text-sm text-slate-500">
+    Correo
+  </p>
+
+  <p className="font-semibold">
+    {cotizacion.clientes?.correo || "-"}
+  </p>
+</div>
+<div>
             <p className="text-sm text-slate-500">
               Estado
             </p>
