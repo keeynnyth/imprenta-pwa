@@ -17,8 +17,9 @@ import {
 } from "../../components/quotes/QuotePdf";
 
 function QuoteDetailPage() {
-  const navigate = useNavigate();
+  
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [cotizacion, setCotizacion] = useState<any>(null);
   const [cargando, setCargando] = useState(true);
@@ -59,6 +60,18 @@ function QuoteDetailPage() {
   }
 
   function descargarPdf() {
+    const hoy = new Date();
+
+const fechaCotizacion = new Date(cotizacion?.created_at);
+
+const esVencida =
+  cotizacion?.estado === "Pendiente" &&
+  fechaCotizacion.toDateString() !== hoy.toDateString();
+
+const estadoMostrar = esVencida
+  ? "Vencida"
+  : cotizacion?.estado;
+  
     if (!cotizacion) return;
 
     generarPdfCotizacion({
@@ -175,7 +188,8 @@ await cargarCotizacion(cotizacion.id);
     );
   }
 
-  if (!cotizacion) {
+  if (!cotizacion) 
+    {
     return (
       <div className="p-6">
         <h1 className="text-3xl font-bold">
@@ -197,39 +211,42 @@ await cargarCotizacion(cotizacion.id);
   return (
     <div>
 
-      <div className="mb-6 flex items-center justify-between">
+     <div className="mb-6 flex items-center justify-between">
 
-        <h1 className="text-3xl font-bold text-slate-800">
-          {cotizacion.numero}
-        </h1>
+  <div className="flex items-center gap-4">
 
-        <div className="flex gap-3">
-         
-          <button
-            onClick={descargarPdf}
-            className="rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-          >
-            PDF
-          </button>
-<button
-  onClick={() => setModalAprobacionAbierto(true)}
-  className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
->
-  Aprobar cotización
-</button>
+    <button
+      onClick={() => navigate(-1)}
+      className="rounded-lg bg-slate-600 px-4 py-2 font-semibold text-white hover:bg-slate-700"
+    >
+      ← Volver
+    </button>
 
-          <button
-            onClick={() =>
-              navigate("/cotizaciones")
-            }
-            className="rounded-lg bg-slate-600 px-4 py-2 text-white hover:bg-slate-700"
-          >
-            Volver
-          </button>
+    <h1 className="text-3xl font-bold">
+      Cotización {cotizacion.numero}
+    </h1>
 
-        </div>
+  </div>
 
-      </div>
+  <div className="flex gap-3">
+
+    <button
+      onClick={descargarPdf}
+      className="rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+    >
+      PDF
+    </button>
+
+    <button
+      onClick={() => setModalAprobacionAbierto(true)}
+      className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+    >
+      Aprobar cotización
+    </button>
+
+  </div>
+
+</div>
 
       <div className="rounded-lg bg-white p-6 shadow">
 

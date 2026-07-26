@@ -45,6 +45,38 @@ export async function obtenerCliente(
   return data;
 }
 
+export async function obtenerClienteConHistorial(
+  id: string
+) {
+  const { data, error } = await supabase
+    .from("clientes")
+    .select(`
+      *,
+      cotizaciones (
+        id,
+        numero,
+        created_at,
+        estado,
+        total_bs
+      ),
+      ordenes_trabajo (
+        id,
+        numero,
+        fecha_creacion,
+        estado,
+        total
+      )
+    `)
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+
+  return data;
+}
+
+
+
 //========================================
 // Crear cliente
 //========================================

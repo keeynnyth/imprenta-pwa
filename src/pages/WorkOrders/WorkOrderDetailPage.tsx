@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import {
   actualizarEstadoOrdenTrabajo,
@@ -11,6 +11,7 @@ import { generarPdfOrdenTrabajo } from "../../components/workorders/WorkOrderPdf
 
 export default function WorkOrderDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [orden, setOrden] = useState<any>(null);
   const [cargando, setCargando] = useState(true);
@@ -115,9 +116,20 @@ correo:
   return (
   <div className="p-6">
 
-    <h1 className="mb-6 text-3xl font-bold">
-      Orden #{orden.numero}
-    </h1>
+    <div className="mb-6 flex items-center justify-between">
+
+  <h1 className="text-3xl font-bold">
+    Orden #{orden.numero}
+  </h1>
+
+  <button
+    onClick={() => navigate(-1)}
+    className="rounded border border-slate-300 bg-white px-4 py-2 font-semibold hover:bg-slate-100"
+  >
+    ← Volver
+  </button>
+
+</div>
 
     <div className="mb-6 flex flex-wrap gap-3">
         <button

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import {
   obtenerClientes,
+  obtenerClienteConHistorial,
   eliminarCliente,
   type Cliente,
 } from "../../services/clientes.service";
@@ -14,6 +15,11 @@ function ClientsPage() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [busqueda, setBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
+  const [clienteExpandido, setClienteExpandido] =
+  useState<string | null>(null);
+  const [historialCliente, setHistorialCliente] =
+  useState<any>(null);
+  
 
   useEffect(() => {
     cargarClientes();
@@ -48,6 +54,32 @@ function ClientsPage() {
       alert("No fue posible eliminar el cliente.");
     }
   }
+
+  async function verHistorial(id: string) {
+
+  if (clienteExpandido === id) {
+    setClienteExpandido(null);
+    return;
+  }
+
+  try {
+
+    const data =
+      await obtenerClienteConHistorial(id);
+
+    setHistorialCliente(data);
+
+    setClienteExpandido(id);
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert("No fue posible cargar el historial.");
+
+  }
+
+}
 
   const clientesFiltrados = clientes.filter((cliente) => {
 
@@ -159,43 +191,205 @@ function ClientsPage() {
 
             ) : (
 
-              clientesFiltrados.map((cliente) => (
+             clientesFiltrados.map((cliente) => (
+
+  <>
+
+    <tr
+      key={cliente.id}
+      className="border-t hover:bg-slate-50"
+    >
+
+      <td className="px-4 py-3">
+        {cliente.nombre}
+      </td>
+
+      <td className="px-4 py-3">
+        {cliente.documento || "-"}
+      </td>
+
+      <td className="px-4 py-3">
+        {cliente.telefono || "-"}
+      </td>
+
+      <td className="space-x-2 px-4 py-3 text-center">
+
+        <button
+          onClick={() =>
+            navigate(`/clientes/${cliente.id}`)
+          }
+          className="rounded bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600"
+        >
+          Editar
+        </button>
+
+        <button
+         onClick={() =>
+  verHistorial(cliente.id)
+}
+          className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
+        >
+          {clienteExpandido === cliente.id
+            ? "Ocultar"
+            : "Historial"}
+        </button>
+
+        <button
+          onClick={() =>
+            eliminar(cliente.id)
+          }
+          className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
+        >
+          Eliminar
+        </button>
+
+      </td>
+
+    </tr>
+
+    {clienteExpandido === cliente.id && (
+
+      <tr>
+
+        <td
+          colSpan={4}
+          className="bg-slate-50 p-6"
+        >
+
+          <div className="rounded-lg border bg-white p-4">
+
+            <h3 className="mb-2 text-lg font-semibold">
+              Historial de {cliente.nombre}
+            </h3>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+
+  <div className="rounded-lg border bg-slate-50 p-4">
+
+    <h4 className="mb-4 text-lg font-semibold">
+      Datos del cliente
+    </h4>
+
+    <div className="space-y-2 text-sm">
+
+      <p>
+        <span className="font-semibold">Documento:</span>{" "}
+        {historialCliente.documento || "-"}
+      </p>
+
+      <p>
+        <span className="font-semibold">Teléfono:</span>{" "}
+        {historialCliente.telefono || "-"}
+      </p>
+
+      <p>
+        <span className="font-semibold">Correo:</span>{" "}
+        {historialCliente.correo || "-"}
+      </p>
+
+      <p>
+        <span className="font-semibold">Dirección:</span>{" "}
+        {historialCliente.direccion || "-"}
+      </p>
+
+      <p>
+        <span className="font-semibold">Observaciones:</span>{" "}
+        {historialCliente.observaciones || "-"}
+      </p>
+
+    </div>
+
+  </div>
+
+  <div className="lg:col-span-2 space-y-6">
+
+    <div>
+
+      <h4 className="mb-3 text-lg font-semibold">
+        Cotizaciones
+      </h4>
+
+      <div className="overflow-x-auto rounded-lg border">
+
+        <table className="min-w-full">
+
+          <thead className="bg-slate-100">
+
+            <tr>
+
+              <th className="px-3 py-2 text-left">
+                Número
+              </th>
+
+              <th className="px-3 py-2 text-left">
+                Fecha
+              </th>
+
+              <th className="px-3 py-2 text-left">
+                Estado
+              </th>
+
+              <th className="px-3 py-2 text-right">
+                Total
+              </th>
+
+              <th className="px-3 py-2 text-center">
+                Acción
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {historialCliente.cotizaciones.length === 0 ? (
+
+              <tr>
+
+                <td
+                  colSpan={5}
+                  className="p-4 text-center text-slate-500"
+                >
+                  No existen cotizaciones.
+                </td>
+
+              </tr>
+
+            ) : (
+
+              historialCliente.cotizaciones.map((cotizacion: any) => (
 
                 <tr
-                  key={cliente.id}
-                  className="border-t hover:bg-slate-50"
+                  key={cotizacion.id}
+                  className="border-t"
                 >
 
-                  <td className="px-4 py-3">
-                    {cliente.nombre}
+                  <td className="px-3 py-2">
+                    {cotizacion.numero}
                   </td>
 
-                  <td className="px-4 py-3">
-                    {cliente.documento || "-"}
+                  <td className="px-3 py-2">
+                    {new Date(cotizacion.created_at).toLocaleDateString()}
                   </td>
 
-                  <td className="px-4 py-3">
-                    {cliente.telefono || "-"}
+                  <td className="px-3 py-2">
+                    {cotizacion.estado}
                   </td>
 
-                  <td className="space-x-2 px-4 py-3 text-center">
+                  <td className="px-3 py-2 text-right">
+                    Bs {cotizacion.total_bs.toFixed(2)}
+                  </td>
+
+                  <td className="px-3 py-2 text-center">
 
                     <button
                       onClick={() =>
-                        navigate(`/clientes/${cliente.id}`)
+                        navigate(`/cotizaciones/${cotizacion.id}`)
                       }
-                      className="rounded bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600"
+                      className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
                     >
-                      Editar
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        eliminar(cliente.id)
-                      }
-                      className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
-                    >
-                      Eliminar
+                      Ver
                     </button>
 
                   </td>
@@ -203,6 +397,137 @@ function ClientsPage() {
                 </tr>
 
               ))
+
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+    <div>
+
+      <h4 className="mb-3 text-lg font-semibold">
+        Órdenes de trabajo
+      </h4>
+
+      <div className="overflow-x-auto rounded-lg border">
+
+        <table className="min-w-full">
+
+          <thead className="bg-slate-100">
+
+            <tr>
+
+              <th className="px-3 py-2 text-left">
+                Número
+              </th>
+
+              <th className="px-3 py-2 text-left">
+                Fecha
+              </th>
+
+              <th className="px-3 py-2 text-left">
+                Estado
+              </th>
+
+              <th className="px-3 py-2 text-right">
+                Total
+              </th>
+
+              <th className="px-3 py-2 text-center">
+                Acción
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            {historialCliente.ordenes_trabajo.length === 0 ? (
+
+              <tr>
+
+                <td
+                  colSpan={5}
+                  className="p-4 text-center text-slate-500"
+                >
+                  No existen órdenes.
+                </td>
+
+              </tr>
+
+            ) : (
+
+              historialCliente.ordenes_trabajo.map((orden: any) => (
+
+                <tr
+                  key={orden.id}
+                  className="border-t"
+                >
+
+                  <td className="px-3 py-2">
+                    OT-{orden.numero}
+                  </td>
+
+                  <td className="px-3 py-2">
+                    {new Date(orden.fecha_creacion).toLocaleDateString()}
+                  </td>
+
+                  <td className="px-3 py-2">
+                    {orden.estado}
+                  </td>
+
+                  <td className="px-3 py-2 text-right">
+                    Bs {Number(orden.total).toFixed(2)}
+                  </td>
+
+                  <td className="px-3 py-2 text-center">
+
+                   <button
+  onClick={() =>
+    navigate(`/ordenes-trabajo/${orden.id}`)
+  }
+  className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
+>
+  Ver
+</button>
+
+                  </td>
+
+                </tr>
+
+              ))
+
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+          </div>
+
+        </td>
+
+      </tr>
+
+    )}
+
+  </>
+
+))
 
             )}
 
