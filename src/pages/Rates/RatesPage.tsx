@@ -7,6 +7,7 @@ import {
   actualizarTasasAutomaticamente,
   type Tasas,
 } from "../../services/rates.service";
+import { actualizarPreciosProductos } from "../../services/products.service";
 
 function RatesPage() {
   const [tasas, setTasas] = useState<Tasas | null>(null);
@@ -16,6 +17,7 @@ function RatesPage() {
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState("");
+  const [estadoProceso, setEstadoProceso] = useState("");
 
   useEffect(() => {
     cargarTasas();
@@ -38,27 +40,41 @@ function RatesPage() {
     }
   }
 
-  async function guardarFactor() {
-    if (!tasas) return;
+async function recalcularCatalogo() {
+  setEstadoProceso("Recalculando catálogo...");
 
-    try {
-      setGuardando(true);
+  await actualizarPreciosProductos();
 
-      await actualizarTasas({
-        ...tasas,
-        factor_binance: Number(factor),
-      });
+  setEstadoProceso("Actualizando tasas...");
 
-      await cargarTasas();
+  await cargarTasas();
 
-      alert("Factor actualizado correctamente.");
-    } catch (error) {
-      console.error(error);
-      setError("No fue posible guardar el factor.");
-    } finally {
-      setGuardando(false);
-    }
+  setEstadoProceso("");
+}
+
+async function guardarFactor() {
+  if (!tasas) return;
+
+  try {
+    setGuardando(true);
+
+    // Guardar el nuevo factor
+    await actualizarTasas({
+      ...tasas,
+      factor_binance: Number(factor),
+    });
+
+    // Recalcular el catálogo y recargar las tasas
+    await recalcularCatalogo();
+
+    toast.success("Factor actualizado y catálogo recalculado.");
+  } catch (error) {
+    console.error(error);
+    setError("No fue posible guardar el factor.");
+  } finally {
+    setGuardando(false);
   }
+}
 
   async function actualizarAhora() {
   try {
@@ -66,9 +82,11 @@ function RatesPage() {
 
     await actualizarTasasAutomaticamente();
 
-    await cargarTasas();
+await recalcularCatalogo();
 
-    toast.success("Tasas actualizadas correctamente.");
+toast.success(
+  "Tasas actualizadas y catálogo recalculado."
+);
   } catch (error) {
     console.error(error);
     setError("No fue posible actualizar las tasas.");
@@ -100,7 +118,7 @@ function RatesPage() {
         </div>
       )}
 
-      <div className="grid gap-5 md:grid-cols-2">
+      <div className="grid gap-5 md:grid-cols-3">
 
         <div className="rounded-xl bg-white p-6 shadow">
           <p className="text-sm text-slate-500">
@@ -121,6 +139,20 @@ function RatesPage() {
             {tasas?.binance.toFixed(4)}
           </p>
         </div>
+
+        <div className="rounded-xl bg-white p-6 shadow">
+  <p className="text-sm text-slate-500">
+    Tasa de Trabajo
+  </p>
+
+  <p className="mt-3 text-4xl font-bold text-slate-800">
+    {tasas?.tasa_efectiva.toFixed(4)}
+  </p>
+
+  <p className="mt-2 text-sm text-slate-500">
+    Binance × Factor Binance
+  </p>
+</div>
 
       </div>
 
@@ -166,6 +198,12 @@ function RatesPage() {
               ? "Guardando..."
               : "Guardar factor"}
           </button>
+
+          {estadoProceso && (
+  <p className="mt-3 text-sm text-gray-500">
+    {estadoProceso}
+  </p>
+)}
 
         </div>
 

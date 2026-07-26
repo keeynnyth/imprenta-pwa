@@ -58,7 +58,7 @@ function ProductsPage() {
   }
 
   async function copiarPrecio(producto: Producto) {
-    const precioBs = Number(producto.costo_usd) * bcv;
+    const precioBs = Number(producto.precio_bs ?? 0);
 
     const texto = `${producto.nombre}
 
@@ -122,9 +122,10 @@ function ProductsPage() {
             <tr>
               <th className="px-4 py-3 text-left">SKU</th>
               <th className="px-4 py-3 text-left">Producto</th>
-              <th className="px-4 py-3 text-right">Precio USD</th>
-              <th className="px-4 py-3 text-right">Precio Bs</th>
-              <th className="px-4 py-3 text-center">Estado</th>
+             <th className="px-4 py-3 text-right">USD Trabajo</th>
+<th className="px-4 py-3 text-right">Precio Bs</th>
+<th className="px-4 py-3 text-right">USD Oficial</th>
+<th className="px-4 py-3 text-center">Estado</th>
               <th className="px-4 py-3 text-center">Acciones</th>
             </tr>
           </thead>
@@ -132,14 +133,14 @@ function ProductsPage() {
           <tbody>
             {cargando ? (
               <tr>
-                <td colSpan={6} className="p-6 text-center">
+                <td colSpan={7} className="p-6 text-center">
                   Cargando productos...
                 </td>
               </tr>
             ) : productosFiltrados.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="p-6 text-center text-slate-500"
                 >
                   No se encontraron productos.
@@ -160,21 +161,22 @@ function ProductsPage() {
                   </td>
 
                   <td className="px-4 py-3 text-right">
-                    USD {Number(producto.costo_usd).toFixed(2)}
-                  </td>
+  USD {Number(producto.costo_usd).toFixed(2)}
+</td>
 
-                  <td className="px-4 py-3 text-right font-semibold text-green-700">
-                    Bs{" "}
-                    {(Number(producto.costo_usd) * bcv).toLocaleString(
-                      "es-VE",
-                      {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      }
-                    )}
-                  </td>
+<td className="px-4 py-3 text-right font-semibold text-green-700">
+  Bs{" "}
+  {Number(producto.precio_bs ?? 0).toLocaleString("es-VE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}
+</td>
 
-                  <td className="px-4 py-3 text-center">
+<td className="px-4 py-3 text-right font-semibold text-blue-700">
+  USD {Number(producto.usd_oficial ?? 0).toFixed(2)}
+</td>
+
+<td className="px-4 py-3 text-center">
                     {producto.activo ? (
                       <span className="rounded bg-green-100 px-3 py-1 text-green-700">
                         Activo

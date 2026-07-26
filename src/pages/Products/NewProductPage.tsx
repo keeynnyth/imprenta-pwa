@@ -6,7 +6,10 @@ import {
   crearProducto,
   obtenerProductoPorId,
   actualizarProducto,
+  obtenerSiguienteSku,
 } from "../../services/products.service";
+
+import { obtenerTasas } from "../../services/rates.service";
 
 function NewProductPage() {
   const navigate = useNavigate();
@@ -16,6 +19,10 @@ function NewProductPage() {
   const [sku, setSku] = useState("");
   const [nombre, setNombre] = useState("");
   const [costoUsd, setCostoUsd] = useState("");
+  const [tasaTrabajo, setTasaTrabajo] = useState(0);
+const [precioBs, setPrecioBs] = useState(0);
+const [usdOficial, setUsdOficial] = useState(0);
+const [bcv, setBcv] = useState(0);
 
   // Estados de la pantalla
   const [guardando, setGuardando] = useState(false);
@@ -24,10 +31,14 @@ function NewProductPage() {
 
   // Si existe un ID en la URL, cargar el producto
   useEffect(() => {
-    if (id) {
-      cargarProducto();
-    }
-  }, [id]);
+  cargarTasas();
+
+  if (id) {
+    cargarProducto();
+  } else {
+    cargarNuevoSku();
+  }
+}, [id]);
 
   async function cargarProducto() {
     try {
@@ -38,6 +49,7 @@ function NewProductPage() {
       setSku(producto.sku);
       setNombre(producto.nombre);
       setCostoUsd(producto.costo_usd.toString());
+      recalcularValores(producto.costo_usd.toString());
     } catch (error) {
       console.error(error);
       setError("No fue posible cargar el producto.");
@@ -45,6 +57,44 @@ function NewProductPage() {
       setCargando(false);
     }
   }
+
+  async function cargarNuevoSku() {
+  try {
+    const siguienteSku = await obtenerSiguienteSku();
+
+    setSku(siguienteSku);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+  async function cargarTasas() {
+  try {
+    const tasas = await obtenerTasas();
+
+setTasaTrabajo(tasas.tasa_efectiva);
+setBcv(tasas.bcv);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function recalcularValores(costo: string) {
+  const costoNumero = Number(costo);
+
+  if (!costoNumero || tasaTrabajo === 0 || bcv === 0) {
+    setPrecioBs(0);
+    setUsdOficial(0);
+    return;
+  }
+
+  const bs = costoNumero * tasaTrabajo;
+
+  const usdOficial = bs / bcv;
+
+  setPrecioBs(bs);
+  setUsdOficial(usdOficial);
+}
 
   // Guardar o actualizar
   async function guardarProducto(
@@ -130,18 +180,21 @@ function NewProductPage() {
         >
 
           <div>
-            <label className="mb-2 block font-medium">
-              SKU
-            </label>
+  <label className="mb-2 block font-medium">
+    SKU
+  </label>
 
-            <input
-              type="text"
-              value={sku}
-              onChange={(e) => setSku(e.target.value)}
-              placeholder="Ej.: TAL-001"
-              className="w-full rounded-lg border border-slate-300 p-3 uppercase focus:border-blue-500 focus:outline-none"
-            />
-          </div>
+  <input
+    type="text"
+    value={sku}
+    readOnly
+    className="w-full rounded-lg border border-slate-300 bg-slate-100 p-3 font-semibold text-slate-700"
+  />
+
+  <p className="mt-1 text-xs text-slate-500">
+    El SKU se genera automáticamente.
+  </p>
+</div>
 
           <div>
             <label className="mb-2 block font-medium">
@@ -159,18 +212,75 @@ function NewProductPage() {
 
           <div>
             <label className="mb-2 block font-medium">
-              Costo (USD)
+            Precio de Venta (USD Trabajo)
             </label>
 
             <input
               type="number"
               step="0.01"
               value={costoUsd}
-              onChange={(e) => setCostoUsd(e.target.value)}
-              placeholder="0.00"
+            onChange={(e) => {
+  setCostoUsd(e.target.value);
+  recalcularValores(e.target.value);
+}}
+              placeholder="Ej.: 20.00"
               className="w-full rounded-lg border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
             />
           </div>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-4">
+
+<div className="rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-slate-700">
+  Ingrese el precio de venta en USD Trabajo. El sistema calculará automáticamente
+  el precio en bolívares usando la Tasa de Trabajo y el equivalente en USD Oficial
+  según el BCV vigente.
+</div>
+  <h3 className="font-semibold text-slate-700">
+    Valores calculados
+  </h3>
+
+  <div>
+    <label className="mb-2 block font-medium">
+      Tasa de Trabajo
+    </label>
+
+    <input
+      readOnly
+      value={tasaTrabajo.toLocaleString("es-VE", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}
+      className="w-full rounded-lg border border-slate-300 bg-slate-100 p-3"
+    />
+  </div>
+
+  <div>
+    <label className="mb-2 block font-medium">
+      Precio Bs
+    </label>
+
+    <input
+      readOnly
+      value={precioBs.toLocaleString("es-VE", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}
+      className="w-full rounded-lg border border-slate-300 bg-slate-100 p-3 text-green-700 font-semibold"
+    />
+  </div>
+
+  <div>
+    <label className="mb-2 block font-medium">
+      USD Oficial ( BCV )
+    </label>
+
+    <input
+      readOnly
+      value={usdOficial.toFixed(2)}
+      className="w-full rounded-lg border border-slate-300 bg-slate-100 p-3"
+    />
+  </div>
+
+</div>
 
           <div className="flex justify-end gap-3">
 
