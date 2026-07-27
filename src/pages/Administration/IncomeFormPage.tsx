@@ -2,10 +2,16 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import {
-  actualizarIngreso,
-  crearIngreso,
-  obtenerIngresoPorId,
-} from "../../services/incomes.service";
+  actualizarMovimiento,
+  crearMovimiento,
+  obtenerMovimientoPorId,
+} from "../../services/movimientos.service";
+
+import { obtenerTasas } from "../../services/rates.service";
+
+
+import type { Movimiento } from "../../services/movimientos.service";
+
 
 function IncomeFormPage() {
   const { id } = useParams();
@@ -13,32 +19,91 @@ function IncomeFormPage() {
 
   const editando = Boolean(id);
 
-  const [form, setForm] = useState({
-    fecha: new Date().toISOString().split("T")[0],
-    concepto: "",
-    monto: 0,
-    moneda: "Bs",
-    metodo_pago: "Transferencia",
-    observaciones: "",
-  });
+ const [form, setForm] = useState({
+  fecha: new Date().toISOString().split("T")[0],
+
+  categoria: "",
+
+  concepto: "",
+
+  referencia: "",
+
+  monto_original: 0,
+
+  moneda: "Bs" as "Bs" | "USD",
+
+  tasa: 0,
+
+  monto_bs: 0,
+
+  monto_usd: 0,
+
+  metodo_pago: "Transferencia",
+
+  observaciones: "",
+});
 
   useEffect(() => {
+    cargarTasa();
+
     if (id) {
-      cargarIngreso();
+      cargarMovimiento();
     }
   }, [id]);
 
-  async function cargarIngreso() {
+  async function cargarTasa() {
     try {
-      const ingreso = await obtenerIngresoPorId(id!);
+      const tasas = await obtenerTasas();
+
+      setForm((prev) => ({
+        ...prev,
+        tasa: tasas.tasa_efectiva,
+      }));
+     setForm((prev) => {
+  const montos = calcularMontos(
+    prev.moneda,
+    prev.monto_original,
+    tasas.tasa_efectiva
+  );
+
+  return {
+    ...prev,
+    tasa: tasas.tasa_efectiva,
+    monto_bs: montos.monto_bs,
+    monto_usd: montos.monto_usd,
+  };
+}); 
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function cargarMovimiento() {
+    try {
+      const movimiento = await obtenerMovimientoPorId(id!);
 
       setForm({
-        fecha: ingreso.fecha,
-        concepto: ingreso.concepto,
-        monto: ingreso.monto,
-        moneda: ingreso.moneda,
-        metodo_pago: ingreso.metodo_pago,
-        observaciones: ingreso.observaciones ?? "",
+        fecha: movimiento.fecha,
+
+        categoria: movimiento.categoria,
+
+        concepto: movimiento.concepto,
+
+        referencia: movimiento.referencia ?? "",
+
+        monto_original: movimiento.monto_original,
+
+        moneda: movimiento.moneda,
+
+        tasa: movimiento.tasa,
+
+        monto_bs: movimiento.monto_bs,
+
+        monto_usd: movimiento.monto_usd,
+
+        metodo_pago: movimiento.metodo_pago,
+
+        observaciones: movimiento.observaciones ?? "",
       });
     } catch (error) {
       console.error(error);
@@ -46,44 +111,103 @@ function IncomeFormPage() {
     }
   }
 
+  function calcularMontos(
+  moneda: "Bs" | "USD",
+  monto: number,
+  tasa: number
+){
+    if (tasa <= 0) {
+      return {
+        monto_bs: 0,
+        monto_usd: 0,
+      };
+    }
+
+    if (moneda === "Bs") {
+      return {
+        monto_bs: monto,
+        monto_usd: Number((monto / tasa).toFixed(2)),
+      };
+    }
+
+    return {
+      monto_bs: Number((monto * tasa).toFixed(2)),
+      monto_usd: monto,
+    };
+  }
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
-    setForm({
+    const { name, value } = e.target;
+
+    let nuevoFormulario = {
       ...form,
-      [e.target.name]:
-        e.target.name === "monto"
-          ? Number(e.target.value)
-          : e.target.value,
-    });
+      [name]:
+        name === "monto_original" || name === "tasa"
+          ? Number(value)
+          : value,
+    };
+
+    if (
+      name === "monto_original" ||
+      name === "moneda" ||
+      name === "tasa"
+    ) {
+      const montos = calcularMontos(
+        nuevoFormulario.moneda,
+        Number(nuevoFormulario.monto_original),
+        Number(nuevoFormulario.tasa)
+      );
+
+      nuevoFormulario = {
+        ...nuevoFormulario,
+        monto_bs: montos.monto_bs,
+        monto_usd: montos.monto_usd,
+      };
+    }
+
+    setForm(nuevoFormulario);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(
+    e: React.FormEvent
+  ) {
     e.preventDefault();
 
     try {
-     if (editando) {
-  await actualizarIngreso(id!, form);
-} else {
-  await crearIngreso(form);
-}
+      const movimiento: Movimiento = {
+  ...form,
+  tipo: "Ingreso",
+};
 
-navigate("/ingresos", { replace: true });
+      if (editando) {
+        await actualizarMovimiento(id!, movimiento);
+      } else {
+        await crearMovimiento(movimiento);
+      }
+
+      navigate("/ingresos", {
+        replace: true,
+      });
     } catch (error) {
-  console.error(error);
-  alert("No fue posible guardar el ingreso.");
-}
-  };
+      console.error(error);
+      alert("No fue posible guardar el ingreso.");
+    }
+  }
 
-  return (
+    return (
     <div className="max-w-3xl p-6">
       <h1 className="mb-6 text-2xl font-bold">
         {editando ? "Editar Ingreso" : "Nuevo Ingreso"}
       </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-4"
+      >
         <input
           type="date"
           name="fecha"
@@ -92,6 +216,32 @@ navigate("/ingresos", { replace: true });
           className="w-full rounded border p-2"
         />
 
+        <select
+          name="categoria"
+          value={form.categoria}
+          onChange={handleChange}
+          className="w-full rounded border p-2"
+          required
+        >
+          <option value="">Seleccione una categoría</option>
+
+          <option value="Venta">
+            Venta
+          </option>
+
+          <option value="Anticipo">
+            Anticipo
+          </option>
+
+          <option value="Cobro pendiente">
+            Cobro pendiente
+          </option>
+
+          <option value="Otro ingreso">
+            Otro ingreso
+          </option>
+        </select>
+
         <input
           type="text"
           name="concepto"
@@ -99,27 +249,88 @@ navigate("/ingresos", { replace: true });
           value={form.concepto}
           onChange={handleChange}
           className="w-full rounded border p-2"
+          required
         />
 
         <input
-          type="number"
-          step="0.01"
-          name="monto"
-          placeholder="Monto"
-          value={form.monto}
+          type="text"
+          name="referencia"
+          placeholder="Referencia (opcional)"
+          value={form.referencia}
           onChange={handleChange}
           className="w-full rounded border p-2"
         />
 
-        <select
-          name="moneda"
-          value={form.moneda}
+        <div className="grid grid-cols-2 gap-4">
+
+          <input
+            type="number"
+            step="0.01"
+            name="monto_original"
+            placeholder="Monto"
+            value={form.monto_original}
+            onChange={handleChange}
+            className="rounded border p-2"
+            required
+          />
+
+          <select
+            name="moneda"
+            value={form.moneda}
+            onChange={handleChange}
+            className="rounded border p-2"
+          >
+            <option value="Bs">
+              Bs
+            </option>
+
+            <option value="USD">
+              USD
+            </option>
+          </select>
+
+        </div>
+
+        <input
+          type="number"
+          step="0.0001"
+          name="tasa"
+          placeholder="Tasa utilizada"
+          value={form.tasa}
           onChange={handleChange}
           className="w-full rounded border p-2"
-        >
-          <option>Bs</option>
-          <option>USD</option>
-        </select>
+          required
+        />
+
+                <div className="grid grid-cols-2 gap-4">
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Equivalente en Bs
+            </label>
+
+            <input
+              type="number"
+              value={form.monto_bs}
+              readOnly
+              className="w-full rounded border bg-gray-100 p-2"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium">
+              Equivalente en USD
+            </label>
+
+            <input
+              type="number"
+              value={form.monto_usd}
+              readOnly
+              className="w-full rounded border bg-gray-100 p-2"
+            />
+          </div>
+
+        </div>
 
         <select
           name="metodo_pago"
@@ -127,30 +338,64 @@ navigate("/ingresos", { replace: true });
           onChange={handleChange}
           className="w-full rounded border p-2"
         >
-          <option>Transferencia</option>
-          <option>Efectivo</option>
-          <option>Zelle</option>
-          <option>Pago Móvil</option>
+          <option value="Transferencia">
+            Transferencia
+          </option>
+
+          <option value="Pago móvil">
+            Pago móvil
+          </option>
+
+          <option value="Efectivo">
+            Efectivo
+          </option>
+
+          <option value="Zelle">
+            Zelle
+          </option>
+
+          <option value="Binance">
+            Binance
+          </option>
+
+          <option value="Otro">
+            Otro
+          </option>
         </select>
 
         <textarea
           name="observaciones"
-          placeholder="Observaciones"
           value={form.observaciones}
           onChange={handleChange}
+          placeholder="Observaciones"
           rows={4}
           className="w-full rounded border p-2"
         />
 
-        <button
-          type="submit"
-          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
-          {editando ? "Actualizar ingreso" : "Guardar ingreso"}
-        </button>
+        <div className="flex justify-end gap-3">
+
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="rounded bg-gray-300 px-4 py-2 hover:bg-gray-400"
+          >
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          >
+            {editando
+              ? "Actualizar ingreso"
+              : "Guardar ingreso"}
+          </button>
+
+        </div>
+
       </form>
     </div>
   );
-}
+  }
 
 export default IncomeFormPage;

@@ -2,11 +2,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
+import type { Movimiento } from "../../services/movimientos.service";
+
 import {
-  actualizarEgreso ,
-  crearEgreso,
-  obtenerEgresoPorId,
-} from "../../services/expenses.service"
+  actualizarMovimiento,
+  crearMovimiento,
+  obtenerMovimientoPorId,
+} from "../../services/movimientos.service";
+
+import { obtenerTasas } from "../../services/rates.service";
 
 function ExpenseFormPage() {
   const { id } = useParams();
@@ -14,69 +18,170 @@ function ExpenseFormPage() {
 
   const editando = Boolean(id);
 
-  const [form, setForm] = useState({
-    fecha: new Date().toISOString().split("T")[0],
-    concepto: "",
-    monto: 0,
-    moneda: "Bs",
-    metodo_pago: "Transferencia",
-    observaciones: "",
-  });
+const [form, setForm] = useState({
+  fecha: new Date().toISOString().split("T")[0],
+
+  categoria: "",
+
+  concepto: "",
+
+  referencia: "",
+
+  monto_original: 0,
+
+  moneda: "Bs" as "Bs" | "USD",
+
+  tasa: 0,
+
+  monto_bs: 0,
+
+  monto_usd: 0,
+
+  metodo_pago: "Transferencia",
+
+  observaciones: "",
+});
 
   useEffect(() => {
-    if (id) {
-      cargarEgreso();
-    }
-  }, [id]);
+  cargarTasa();
 
-  async function cargarEgreso() {
-    try {
-      const egreso = await obtenerEgresoPorId(id!);
+  if (id) {
+    cargarEgreso();
+  }
+}, [id]);
 
-      setForm({
-        fecha: egreso.fecha,
-        concepto: egreso.concepto,
-        monto: egreso.monto,
-        moneda: egreso.moneda,
-        metodo_pago: egreso.metodo_pago,
-        observaciones: egreso.observaciones ?? "",
-      });
-    } catch (error) {
-      console.error(error);
-      alert("No se pudo cargar el ingreso.");
-    }
+async function cargarTasa() {
+  try {
+    const tasas = await obtenerTasas();
+
+    setForm((prev) => {
+      const montos = calcularMontos(
+        prev.moneda,
+        prev.monto_original,
+        tasas.tasa_efectiva
+      );
+
+      return {
+        ...prev,
+        tasa: tasas.tasa_efectiva,
+        monto_bs: montos.monto_bs,
+        monto_usd: montos.monto_usd,
+      };
+    });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+function calcularMontos(
+  moneda: "Bs" | "USD",
+  monto: number,
+  tasa: number
+) {
+  if (tasa <= 0) {
+    return {
+      monto_bs: 0,
+      monto_usd: 0,
+    };
   }
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
+  if (moneda === "Bs") {
+    return {
+      monto_bs: monto,
+      monto_usd: Number((monto / tasa).toFixed(2)),
+    };
+  }
+
+  return {
+    monto_bs: Number((monto * tasa).toFixed(2)),
+    monto_usd: monto,
+  };
+}
+
+async function cargarEgreso() {
+  try {
+    const egreso = await obtenerMovimientoPorId(id!);
+
     setForm({
-      ...form,
-      [e.target.name]:
-        e.target.name === "monto"
-          ? Number(e.target.value)
-          : e.target.value,
+      fecha: egreso.fecha,
+      categoria: egreso.categoria,
+      concepto: egreso.concepto,
+      referencia: egreso.referencia ?? "",
+      monto_original: egreso.monto_original,
+      moneda: egreso.moneda,
+      tasa: egreso.tasa,
+      monto_bs: egreso.monto_bs,
+      monto_usd: egreso.monto_usd,
+      metodo_pago: egreso.metodo_pago,
+      observaciones: egreso.observaciones ?? "",
     });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-     if (editando) {
-  await actualizarEgreso(id!, form);
-} else {
-  await crearEgreso(form);
+  } catch (error) {
+    console.error(error);
+    alert("No se pudo cargar el egreso.");
+  }
 }
 
-navigate("/egresos", { replace: true });
-    } catch (error) {
-  console.error(error);
-  alert("No fue posible guardar el egreso.");
-}
+ const handleChange = (
+  e: React.ChangeEvent<
+    HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+  >
+) => {
+  const { name, value } = e.target;
+
+  let nuevoFormulario = {
+    ...form,
+    [name]:
+      name === "monto_original" || name === "tasa"
+        ? Number(value)
+        : value,
   };
+
+  if (
+    name === "monto_original" ||
+    name === "moneda" ||
+    name === "tasa"
+  ) {
+    const montos = calcularMontos(
+      nuevoFormulario.moneda,
+      Number(nuevoFormulario.monto_original),
+      Number(nuevoFormulario.tasa)
+    );
+
+    nuevoFormulario = {
+      ...nuevoFormulario,
+      monto_bs: montos.monto_bs,
+      monto_usd: montos.monto_usd,
+    };
+  }
+
+  setForm(nuevoFormulario);
+};
+
+  const handleSubmit = async (
+  e: React.FormEvent
+) => {
+  e.preventDefault();
+
+  try {
+    const movimiento: Movimiento = {
+      ...form,
+      tipo: "Egreso",
+    };
+
+    if (editando) {
+      await actualizarMovimiento(id!, movimiento);
+    } else {
+      await crearMovimiento(movimiento);
+    }
+
+    navigate("/egresos", {
+      replace: true,
+    });
+  } catch (error) {
+    console.error(error);
+    alert("No fue posible guardar el egreso.");
+  }
+};
 
   return (
     <div className="max-w-3xl p-6">
@@ -93,6 +198,26 @@ navigate("/egresos", { replace: true });
           className="w-full rounded border p-2"
         />
 
+        <select
+  name="categoria"
+  value={form.categoria}
+  onChange={handleChange}
+  className="w-full rounded border p-2"
+>
+  <option value="">Seleccione una categoría</option>
+
+  <option value="Materiales">Materiales</option>
+  <option value="Servicios">Servicios</option>
+  <option value="Equipos">Equipos</option>
+  <option value="Nómina">Nómina</option>
+  <option value="Impuestos">Impuestos</option>
+  <option value="Alquiler">Alquiler</option>
+  <option value="Transporte">Transporte</option>
+  <option value="Publicidad">Publicidad</option>
+  <option value="Mantenimiento">Mantenimiento</option>
+  <option value="Otros">Otros</option>
+</select>
+
         <input
           type="text"
           name="concepto"
@@ -103,14 +228,14 @@ navigate("/egresos", { replace: true });
         />
 
         <input
-          type="number"
-          step="0.01"
-          name="monto"
-          placeholder="Monto"
-          value={form.monto}
-          onChange={handleChange}
-          className="w-full rounded border p-2"
-        />
+  type="number"
+  step="0.01"
+  name="monto_original"
+  placeholder="Monto"
+  value={form.monto_original}
+  onChange={handleChange}
+  className="w-full rounded border p-2"
+/>
 
         <select
           name="moneda"
@@ -121,6 +246,52 @@ navigate("/egresos", { replace: true });
           <option>Bs</option>
           <option>USD</option>
         </select>
+        <label className="block font-medium">
+  Tasa del proveedor
+</label>
+
+<input
+  type="number"
+  step="0.0001"
+  name="tasa"
+  value={form.tasa}
+  onChange={handleChange}
+  className="w-full rounded border p-2"
+/>
+
+<button
+  type="button"
+  onClick={async () => {
+    const tasas = await obtenerTasas();
+
+    const montos = calcularMontos(
+      form.moneda,
+      form.monto_original,
+      tasas.tasa_efectiva
+    );
+
+    setForm({
+      ...form,
+      tasa: tasas.tasa_efectiva,
+      monto_bs: montos.monto_bs,
+      monto_usd: montos.monto_usd,
+    });
+  }}
+  className="text-sm text-blue-600 hover:underline"
+>
+  Usar tasa de trabajo
+</button>
+<div className="rounded bg-slate-100 p-3 text-sm">
+  <p>
+    Equivalente Bs:
+    <strong>{form.monto_bs.toFixed(2)}</strong>
+  </p>
+
+  <p>
+    Equivalente USD:
+    <strong>{form.monto_usd.toFixed(2)}</strong>
+  </p>
+</div>
 
         <select
           name="metodo_pago"

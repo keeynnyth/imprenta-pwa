@@ -3,20 +3,26 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Card from "../../components/ui/Card";
 import PageHeader from "../../components/ui/PageHeader";
-import type { Expense } from "../../services/expenses.service";
+
+
+import type { Movimiento } from "../../services/movimientos.service";
 
 import {
-  eliminarEgreso,
-  obtenerEgresos,
-} from "../../services/expenses.service";
+  eliminarMovimiento,
+  obtenerMovimientos,
+} from "../../services/movimientos.service";
 
 function ExpensesPage() {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [expenses, setExpenses] = useState<Movimiento[]>([]);
 
-  async function cargarEgresos() {
-    const data = await obtenerEgresos();
-    setExpenses(data);
+ async function cargarEgresos() {
+  try {
+    const data = await obtenerMovimientos("Egreso");
+    setExpenses(data ?? []);
+  } catch (error) {
+    console.error(error);
   }
+}
 
   useEffect(() => {
     cargarEgresos();
@@ -29,7 +35,7 @@ function ExpensesPage() {
 
     if (!confirmar) return;
 
-    await eliminarEgreso(id);
+    await eliminarMovimiento(id);
     cargarEgresos();
   }
 function formatearFecha(fecha: string) {
@@ -59,13 +65,16 @@ function formatearMonto(
       <table className="min-w-full border border-slate-200">
         <thead className="bg-slate-100">
           <tr>
-            <th className="border p-2">Fecha</th>
-            <th className="border p-2">Concepto</th>
-            <th className="border p-2">Monto</th>
-            <th className="border p-2">Moneda</th>
-            <th className="border p-2">Método</th>
-            <th className="border p-2">Acciones</th>
-          </tr>
+  <th className="border p-2">Fecha</th>
+  <th className="border p-2">Categoría</th>
+  <th className="border p-2">Concepto</th>
+  <th className="border p-2">Monto Original</th>
+  <th className="border p-2">Tasa</th>
+  <th className="border p-2">Equiv. Bs</th>
+  <th className="border p-2">Equiv. USD</th>
+  <th className="border p-2">Método</th>
+  <th className="border p-2">Acciones</th>
+</tr>
         </thead>
 
         <tbody>
@@ -75,21 +84,39 @@ function formatearMonto(
   {formatearFecha(expense.fecha)}
 </td>
 
-              <td className="border p-2">
-                {expense.concepto}
-              </td>
-
-              <td className="border p-2">
-  {expense.monto}
+              <td className="border p-2 text-center">
+  {expense.categoria}
 </td>
 
-              <td className="border p-2">
-                {expense.moneda}
-              </td>
+<td className="border p-2">
+  {expense.concepto}
+</td>
 
-              <td className="border p-2">
-                {expense.metodo_pago}
-              </td>
+<td className="border p-2">
+  {formatearMonto(
+    expense.monto_original,
+    expense.moneda
+  )}
+</td>
+
+<td className="border p-2">
+  {expense.tasa.toLocaleString("es-AR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}
+</td>
+
+<td className="border p-2">
+  {formatearMonto(expense.monto_bs, "Bs")}
+</td>
+
+<td className="border p-2">
+  {formatearMonto(expense.monto_usd, "USD")}
+</td>
+
+<td className="border p-2">
+  {expense.metodo_pago}
+</td>
 
               <td className="border p-2">
                 <div className="flex gap-2">
@@ -116,7 +143,7 @@ function formatearMonto(
           {expenses.length === 0 && (
             <tr>
               <td
-                colSpan={6}
+                colSpan={9}
                 className="p-6 text-center text-slate-500"
               >
                 No existen egresos registrados.
