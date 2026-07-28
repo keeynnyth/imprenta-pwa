@@ -1,9 +1,11 @@
 
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../../config/supabase";
+import { useAuth } from "../../contexts/AuthContext";
 
 function MenuLateral() {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
 
 const cerrarSesion = async () => {
   await supabase.auth.signOut();
@@ -74,22 +76,36 @@ const cerrarSesion = async () => {
             </Link>
           </li>
 
-          <li>
-  <Link
-    to="/ingresos"
-    className="block rounded p-2 hover:bg-slate-700"
-  >
-    💰 Ingresos
-  </Link>
-</li>
-<li>
-  <Link
-    to="/egresos"
-    className="block rounded p-2 hover:bg-slate-700"
-  >
-    💸 Egresos
-  </Link>
-</li>
+ {usuario?.rol === "admin" && (
+  <>
+    <li>
+      <Link
+        to="/usuarios"
+        className="block rounded p-2 hover:bg-slate-700"
+      >
+        👤 Usuarios
+      </Link>
+    </li>
+
+    <li>
+      <Link
+        to="/ingresos"
+        className="block rounded p-2 hover:bg-slate-700"
+      >
+        💰 Ingresos
+      </Link>
+    </li>
+
+    <li>
+      <Link
+        to="/egresos"
+        className="block rounded p-2 hover:bg-slate-700"
+      >
+        💸 Egresos
+      </Link>
+    </li>
+  </>
+)}
 
           <li>
             <Link

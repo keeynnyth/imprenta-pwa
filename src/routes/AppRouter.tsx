@@ -1,212 +1,157 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-import MenuLateral from "../components/layout/MenuLateral";
+import ProtectedRoute from "./ProtectedRoute";
+import ProtectedLayout from "../components/layout/ProtectedLayout";
 
+import LoginPage from "../pages/Login/LoginPage";
 import DashboardPage from "../pages/Dashboard/DashboardPage";
 
 import ProductsPage from "../pages/Products/ProductsPage";
 import NewProductPage from "../pages/Products/NewProductPage";
 
-import RatesPage from "../pages/Rates/RatesPage";
-
-import SettingsPage from "../pages/Settings/SettingsPage";
-
-import QuotesPage from "../pages/Quotes/QuotesPage";
 import QuotesHistoryPage from "../pages/Quotes/QuotesHistoryPage";
-
-
-import ClientsPage from "../pages/clientes/ClientsPage";
+import QuotesPage from "../pages/Quotes/QuotesPage";
 import QuoteDetailPage from "../pages/Quotes/QuoteDetailPage";
 
-
+import ClientsPage from "../pages/clientes/ClientsPage";
 import NewClientPage from "../pages/clientes/NewClientPage";
 
 import WorkOrdersPage from "../pages/WorkOrders/WorkOrdersPage";
-
 import WorkOrderDetailPage from "../pages/WorkOrders/WorkOrderDetailPage";
 
-import LoginPage from "../pages/Login/LoginPage";
-import ProtectedRoute from "./ProtectedRoute";
-import IncomeFormPage from "../pages/Administration/IncomeFormPage";
+import RatesPage from "../pages/Rates/RatesPage";
+import SettingsPage from "../pages/Settings/SettingsPage";
 
 import IncomesPage from "../pages/Administration/IncomesPage";
+import IncomeFormPage from "../pages/Administration/IncomeFormPage";
 
 import ExpensesPage from "../pages/Administration/ExpensesPage";
 import ExpenseFormPage from "../pages/Administration/ExpenseFormPage";
-
+import UsersPage from "../pages/Administration/UsersPage";
+import UserFormPage from "../pages/Administration/UserFormPage";
+import AdminRoute from "./AdminRoute";
 
 function AppRouter() {
-
   return (
     <BrowserRouter>
-      <div className="flex h-screen">
+      <Routes>
 
-        <MenuLateral />
+        {/* Rutas públicas */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
-        <main className="flex-1 overflow-auto bg-slate-100 p-8">
+        {/* Rutas protegidas */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <ProtectedLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="/dashboard" element={<DashboardPage />} />
 
-          <Routes>
+          {/* Productos */}
+          <Route path="/productos" element={<ProductsPage />} />
+          <Route path="/productos/nuevo" element={<NewProductPage />} />
+          <Route path="/productos/:id" element={<NewProductPage />} />
 
-            <Route
-  path="/login"
-  element={<LoginPage />}
-/>
+          {/* Clientes */}
+          <Route path="/clientes" element={<ClientsPage />} />
+          <Route path="/clientes/nuevo" element={<NewClientPage />} />
+          <Route path="/clientes/:id" element={<NewClientPage />} />
 
-           <Route
-  path="/"
-  element={<Navigate to="/login" replace />}
-/>
+          {/* Cotizaciones */}
+          <Route path="/cotizaciones" element={<QuotesHistoryPage />} />
+          <Route path="/cotizaciones/nueva" element={<QuotesPage />} />
+          <Route path="/cotizaciones/:id" element={<QuoteDetailPage />} />
 
-<Route
-  path="/dashboard"
-  element={
-    <ProtectedRoute>
-      <DashboardPage />
-    </ProtectedRoute>
-  }
-/>
+          {/* Órdenes de trabajo */}
+          <Route path="/ordenes-trabajo" element={<WorkOrdersPage />} />
+          <Route path="/ordenes-trabajo/:id" element={<WorkOrderDetailPage />} />
 
-<Route
+          {/* Tasas */}
+          <Route path="/tasas" element={<RatesPage />} />
+
+          {/* Configuración */}
+          <Route path="/configuracion" element={<SettingsPage />} />
+
+          {/* Ingresos */}
+         <Route
   path="/ingresos"
   element={
-    <ProtectedRoute>
+    <AdminRoute>
       <IncomesPage />
-    </ProtectedRoute>
+    </AdminRoute>
   }
 />
 
 <Route
   path="/ingresos/nuevo"
   element={
-    <ProtectedRoute>
+    <AdminRoute>
       <IncomeFormPage />
-    </ProtectedRoute>
+    </AdminRoute>
   }
 />
 
 <Route
   path="/ingresos/:id"
   element={
-    <ProtectedRoute>
+    <AdminRoute>
       <IncomeFormPage />
-    </ProtectedRoute>
+    </AdminRoute>
   }
 />
 
-            {/* PRODUCTOS */}
-
-            <Route
-              path="/productos"
-              element={<ProductsPage />}
-            />
-
-            <Route
-              path="/productos/nuevo"
-              element={<NewProductPage />}
-            />
-
-            <Route
-              path="/productos/:id"
-              element={<NewProductPage />}
-            />
-
-            {/* COTIZACIONES */}
-
-            {/* CLIENTES */}
-
-<Route
-  path="/clientes"
-  element={<ClientsPage />}
-/>
-
-<Route
-  path="/clientes/nuevo"
-  element={<NewClientPage />}
-/>
-
-<Route
-  path="/clientes/:id"
-  element={<NewClientPage />}
-/>
-
-            <Route
-              path="/cotizaciones"
-              element={<QuotesHistoryPage />}
-            />
-
-            <Route
-              path="/cotizaciones/nueva"
-              element={<QuotesPage />}
-            />
-            <Route
-             path="/cotizaciones/nueva"
-            element={<QuotesPage />}
-            />
-<Route
-  path="/cotizaciones/:id"
-  element={<QuoteDetailPage />}
-/>
-{/* ÓRDENES DE TRABAJO */}
-
-<Route
-  path="/ordenes-trabajo"
-  element={<WorkOrdersPage />}
-/>
-<Route
-  path="/ordenes-trabajo/:id"
-  element={<WorkOrderDetailPage />}
-/>
-            {/* CLIENTES */}
-
-            <Route
-              path="/clientes"
-              element={<ClientsPage />}
-            />
-
-            {/* TASAS */}
-
-            <Route
-              path="/tasas"
-              element={<RatesPage />}
-            />
-
-            {/* CONFIGURACIÓN */}
-
-            <Route
-              path="/configuracion"
-              element={<SettingsPage />}
-            />
-<Route
+          {/* Egresos */}
+         <Route
   path="/egresos"
   element={
-    <ProtectedRoute>
+    <AdminRoute>
       <ExpensesPage />
-    </ProtectedRoute>
+    </AdminRoute>
   }
 />
 
 <Route
   path="/egresos/nuevo"
   element={
-    <ProtectedRoute>
+    <AdminRoute>
       <ExpenseFormPage />
-    </ProtectedRoute>
+    </AdminRoute>
   }
 />
 
 <Route
   path="/egresos/:id"
   element={
-    <ProtectedRoute>
+    <AdminRoute>
       <ExpenseFormPage />
-    </ProtectedRoute>
+    </AdminRoute>
   }
 />
-          </Routes>
+        </Route>
 
-        </main>
+                  {/* Usuarios */}
+          <Route
+            path="/usuarios"
+            element={
+              <AdminRoute>
+                <UsersPage />
+              </AdminRoute>
+            }
+          />
 
-      </div>
+          <Route
+            path="/usuarios/nuevo"
+            element={
+              <AdminRoute>
+                <UserFormPage />
+              </AdminRoute>
+            }
+          />
+
+      </Routes>
     </BrowserRouter>
   );
 }
