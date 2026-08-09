@@ -1,8 +1,8 @@
-
 import type { ReactNode } from "react";
 
 interface DataTableProps {
   title: string;
+  subtitle?: ReactNode;
   action?: ReactNode;
   search?: ReactNode;
   info?: ReactNode;
@@ -13,6 +13,7 @@ interface DataTableProps {
 
 export default function DataTable({
   title,
+  subtitle,
   action,
   search,
   info,
@@ -21,13 +22,22 @@ export default function DataTable({
   pagination,
 }: DataTableProps) {
   return (
-    <div className="w-full space-y-4">
+    <div className="space-y-4">
 
       {/* Encabezado */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
-          {title}
-        </h1>
+
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
+            {title}
+          </h1>
+
+          {subtitle && (
+            <p className="mt-1 text-sm text-slate-500">
+              {subtitle}
+            </p>
+          )}
+        </div>
 
         {action}
       </div>

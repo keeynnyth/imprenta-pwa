@@ -1,4 +1,3 @@
-
 import { supabase } from "../config/supabase";
 import type { OrdenTrabajo } from "../interfaces/orden-trabajo.interface";
 
@@ -41,7 +40,7 @@ export async function crearOrdenTrabajo(data: {
   abono: number;
   observaciones: string;
 }) {
-  const { data: orden, error } = await supabase
+  const { error } = await supabase
     .from("ordenes_trabajo")
     .insert({
       cotizacion_id: data.cotizacion_id,
@@ -51,8 +50,7 @@ export async function crearOrdenTrabajo(data: {
       abono: data.abono,
       observaciones: data.observaciones,
       estado: "Pendiente",
-    })
-   
+    });
 
   if (error) {
     throw error;
@@ -67,32 +65,32 @@ export async function obtenerOrdenTrabajoPorId(
   const { data, error } = await supabase
     .from("ordenes_trabajo")
     .select(`
-  *,
-  cotizaciones (
-    id,
-    numero,
-    cliente,
-    documento,
+      *,
+      cotizaciones (
+        id,
+        numero,
+        cliente,
+        documento,
 
-    clientes (
-      telefono,
-      correo
-    ),
+        clientes (
+          telefono,
+          correo
+        ),
 
-    detalle_cotizacion (
-      id,
-      cantidad,
-      precio_usd,
-      precio_bs,
-      subtotal_usd,
-      subtotal_bs,
-      productos (
-        sku,
-        nombre
+        detalle_cotizacion (
+          id,
+          cantidad,
+          precio_usd,
+          precio_bs,
+          subtotal_usd,
+          subtotal_bs,
+          productos (
+            sku,
+            nombre
+          )
+        )
       )
-    )
-  )
-`)
+    `)
     .eq("id", id)
     .single();
 

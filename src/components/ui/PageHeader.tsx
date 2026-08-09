@@ -1,4 +1,4 @@
-
+import type { ReactNode } from "react";
 import PrimaryButton from "./PrimaryButton";
 
 interface PageHeaderProps {
@@ -6,6 +6,7 @@ interface PageHeaderProps {
   subtitle?: string;
   buttonText?: string;
   buttonLink?: string;
+  actions?: ReactNode;
 }
 
 function PageHeader({
@@ -13,9 +14,10 @@ function PageHeader({
   subtitle,
   buttonText,
   buttonLink,
+  actions,
 }: PageHeaderProps) {
   return (
-    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
           {title}
@@ -28,12 +30,19 @@ function PageHeader({
         )}
       </div>
 
-      {buttonText && buttonLink && (
+      {actions ? (
         <div className="w-full sm:w-auto">
-          <PrimaryButton to={buttonLink}>
-            {buttonText}
-          </PrimaryButton>
+          {actions}
         </div>
+      ) : (
+        buttonText &&
+        buttonLink && (
+          <div className="w-full sm:w-auto">
+            <PrimaryButton to={buttonLink}>
+              {buttonText}
+            </PrimaryButton>
+          </div>
+        )
       )}
     </div>
   );

@@ -110,7 +110,7 @@ export default function AuthProvider({
       data: { subscription },
     } =
       supabase.auth.onAuthStateChange(
-        (event, session) => {
+       (_event, session) => {
           /*
            * Dejamos que Supabase termine de
            * procesar el cambio de autenticación
