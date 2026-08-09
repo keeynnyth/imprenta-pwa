@@ -37,33 +37,75 @@ export async function crearMovimiento(
     .select()
     .single();
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
 
 export async function obtenerMovimientos(
-  tipo?: "Ingreso" | "Egreso"
+  tipo?: "Ingreso" | "Egreso",
+  page = 1,
+  pageSize = 30
 ) {
+  const desde = (page - 1) * pageSize;
+  const hasta = desde + pageSize - 1;
+
   let query = supabase
     .from("movimientos")
-    .select("*");
+    .select("*", { count: "exact" });
 
   if (tipo) {
     query = query.eq("tipo", tipo);
   }
 
-  const { data, error } = await query
+  const {
+    data,
+    error,
+    count,
+  } = await query
     .order("fecha", { ascending: false })
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(desde, hasta);
 
   if (error) {
     throw error;
   }
 
-  return data;
+  return {
+    data: data ?? [],
+    total: count ?? 0,
+  };
+}
+
+export async function obtenerTotalesMovimientos() {
+  const { count: total } = await supabase
+    .from("movimientos")
+    .select("*", {
+      count: "exact",
+      head: true,
+    });
+
+  const { count: ingresos } = await supabase
+    .from("movimientos")
+    .select("*", {
+      count: "exact",
+      head: true,
+    })
+    .eq("tipo", "Ingreso");
+
+  const { count: egresos } = await supabase
+    .from("movimientos")
+    .select("*", {
+      count: "exact",
+      head: true,
+    })
+    .eq("tipo", "Egreso");
+
+  return {
+    total: total ?? 0,
+    ingresos: ingresos ?? 0,
+    egresos: egresos ?? 0,
+  };
 }
 
 export async function obtenerMovimientoPorId(
@@ -75,9 +117,7 @@ export async function obtenerMovimientoPorId(
     .eq("id", id)
     .single();
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
@@ -93,9 +133,7 @@ export async function actualizarMovimiento(
     .select()
     .single();
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
 
   return data;
 }
@@ -108,7 +146,47 @@ export async function eliminarMovimiento(
     .delete()
     .eq("id", id);
 
-  if (error) {
-    throw error;
-  }
+  if (error) throw error;
+}
+
+export interface ResumenFinanciero {
+
+  ingresos_hoy_bs: number;
+  ingresos_hoy_usd: number;
+
+  egresos_hoy_bs: number;
+  egresos_hoy_usd: number;
+
+  ingresos_semana_bs: number;
+  ingresos_semana_usd: number;
+
+  egresos_semana_bs: number;
+  egresos_semana_usd: number;
+
+  ingresos_mes_bs: number;
+  ingresos_mes_usd: number;
+
+  egresos_mes_bs: number;
+  egresos_mes_usd: number;
+
+  ingresos_anio_bs: number;
+  ingresos_anio_usd: number;
+
+  egresos_anio_bs: number;
+  egresos_anio_usd: number;
+
+  saldo_bs: number;
+  saldo_usd: number;
+}
+
+export async function obtenerResumenFinanciero(): Promise<ResumenFinanciero> {
+
+  const { data, error } = await supabase
+    .from("vw_resumen_financiero")
+    .select("*")
+    .single();
+
+  if (error) throw error;
+
+  return data;
 }

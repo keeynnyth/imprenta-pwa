@@ -1,12 +1,15 @@
+
 import { useEffect, useState } from "react";
 import { FiRefreshCw } from "react-icons/fi";
 import toast from "react-hot-toast";
+
 import {
   obtenerTasas,
   actualizarTasas,
   actualizarTasasAutomaticamente,
   type Tasas,
 } from "../../services/rates.service";
+
 import { actualizarPreciosProductos } from "../../services/products.service";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -101,11 +104,21 @@ function RatesPage() {
   }
 
   if (cargando) {
-    return <div className="p-8">Cargando tasas...</div>;
+    return (
+      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <p className="text-slate-500">
+            Cargando tasas...
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-2 sm:px-6 lg:px-8">
+
+      {/* Encabezado */}
       <div>
         <h1 className="text-3xl font-bold text-slate-800">
           Tasas
@@ -116,80 +129,113 @@ function RatesPage() {
         </p>
       </div>
 
+      {/* Error */}
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
           {error}
         </div>
       )}
 
-      <div className="grid gap-5 md:grid-cols-3">
-        <div className="rounded-xl bg-white p-6 shadow">
-          <p className="text-sm text-slate-500">
+      {/* Tasas principales */}
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+        {/* BCV */}
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
             Tasa BCV
           </p>
 
-          <p className="mt-3 text-4xl font-bold text-slate-800">
+          <p className="mt-3 text-3xl font-bold text-slate-800 sm:text-4xl">
             {tasas?.bcv.toFixed(4)}
+          </p>
+
+          <p className="mt-2 text-xs text-slate-400">
+            Tasa oficial
           </p>
         </div>
 
-        <div className="rounded-xl bg-white p-6 shadow">
-          <p className="text-sm text-slate-500">
+        {/* Binance */}
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+          <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
             Binance
           </p>
 
-          <p className="mt-3 text-4xl font-bold text-slate-800">
+          <p className="mt-3 text-3xl font-bold text-slate-800 sm:text-4xl">
             {tasas?.binance.toFixed(4)}
+          </p>
+
+          <p className="mt-2 text-xs text-slate-400">
+            Referencia de mercado
           </p>
         </div>
 
-        <div className="rounded-xl bg-white p-6 shadow">
-          <p className="text-sm text-slate-500">
+        {/* Tasa efectiva */}
+        <div className="rounded-xl border border-orange-200 bg-orange-50 p-6 shadow-sm transition-shadow hover:shadow-md sm:col-span-2 lg:col-span-1">
+          <p className="text-sm font-semibold uppercase tracking-wide text-orange-700">
             Tasa de Trabajo
           </p>
 
-          <p className="mt-3 text-4xl font-bold text-slate-800">
+          <p className="mt-3 text-3xl font-bold text-orange-800 sm:text-4xl">
             {tasas?.tasa_efectiva.toFixed(4)}
           </p>
 
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-xs text-orange-600">
             Binance × Factor Binance
           </p>
         </div>
+
       </div>
 
-      <div className="rounded-xl bg-white p-6 shadow">
-        <h2 className="mb-5 text-lg font-semibold">
-          Configuración
-        </h2>
+      {/* Configuración */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+
+        <div className="mb-6">
+          <h2 className="text-xl font-bold text-slate-800">
+            Configuración
+          </h2>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Parámetros utilizados para el cálculo de la tasa de trabajo.
+          </p>
+        </div>
 
         {esAdmin && (
-          <>
-            <label className="mb-2 block font-medium">
+          <div className="max-w-md">
+
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
               Factor Binance
             </label>
 
             <input
               type="number"
-              step="0.01"
+              step="0.0001"
               value={factor}
               onChange={(e) =>
                 setFactor(e.target.value)
               }
-              className="w-full rounded-lg border border-slate-300 p-3"
+              className="w-full rounded-lg border border-slate-300 bg-white p-3 text-slate-800 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
             />
-          </>
+
+            <p className="mt-2 text-xs text-slate-500">
+              Este valor se utiliza para calcular la tasa de trabajo.
+            </p>
+
+          </div>
         )}
 
-        <div className="mt-6 flex items-center justify-end gap-3">
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+
           <button
+            type="button"
             onClick={actualizarAhora}
             disabled={guardando}
-            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2 text-white hover:bg-emerald-700 disabled:bg-emerald-300"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
           >
             <FiRefreshCw
               className={
-                guardando ? "animate-spin" : ""
+                guardando
+                  ? "animate-spin"
+                  : ""
               }
               size={18}
             />
@@ -201,46 +247,71 @@ function RatesPage() {
 
           {esAdmin && (
             <button
+              type="button"
               onClick={guardarFactor}
               disabled={guardando}
-              className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 disabled:bg-blue-300"
+              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
             >
               {guardando
                 ? "Guardando..."
                 : "Guardar factor"}
             </button>
           )}
+
         </div>
 
         {estadoProceso && (
-          <p className="mt-3 text-sm text-gray-500">
+          <div className="mt-4 rounded-lg bg-slate-50 p-3 text-sm font-medium text-slate-600">
             {estadoProceso}
-          </p>
+          </div>
         )}
+
       </div>
-            <div className="rounded-xl bg-white p-6 shadow">
-        <h2 className="mb-4 text-lg font-semibold">
+
+      {/* Información */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+
+        <h2 className="mb-5 text-xl font-bold text-slate-800">
           Información
         </h2>
 
-        <p>
-          <strong>Última actualización:</strong>{" "}
-          {tasas &&
-            new Date(
-              tasas.ultima_actualizacion
-            ).toLocaleString()}
-        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
 
-        <p className="mt-2">
-          <strong>Origen:</strong> {tasas?.origen}
-        </p>
+          <div className="rounded-lg bg-slate-50 p-4">
+            <p className="text-sm font-semibold text-slate-500">
+              Última actualización
+            </p>
 
-        <p className="mt-5 text-sm text-slate-500">
-          Las tasas se actualizan automáticamente
-          todos los días a las 09:00, 12:00, 14:00
-          y 17:00.
-        </p>
+            <p className="mt-1 font-medium text-slate-800">
+              {tasas &&
+                new Date(
+                  tasas.ultima_actualizacion
+                ).toLocaleString()}
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-slate-50 p-4">
+            <p className="text-sm font-semibold text-slate-500">
+              Origen
+            </p>
+
+            <p className="mt-1 font-medium text-slate-800">
+              {tasas?.origen}
+            </p>
+          </div>
+
+        </div>
+
+        <div className="mt-5 rounded-lg border border-orange-100 bg-orange-50 p-4">
+          <p className="text-sm leading-6 text-orange-800">
+            Las tasas se actualizan automáticamente
+            todos los días a las 09:00, 12:00, 14:00
+            y 17:00.
+          </p>
+        </div>
+
       </div>
+
     </div>
   );
 }

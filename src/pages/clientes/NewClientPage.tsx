@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -77,7 +76,6 @@ function NewClientPage() {
       }
 
       navigate("/clientes");
-
     } catch (error) {
       console.error(error);
       alert("No fue posible guardar el cliente.");
@@ -87,133 +85,153 @@ function NewClientPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="w-full">
 
-      <div className="mb-6 flex items-center justify-between">
+      {/* Encabezado */}
+      <div className="mb-5 flex items-center justify-between gap-3">
 
-        <h1 className="text-3xl font-bold text-slate-800">
-
+        <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
           {editando ? "Editar Cliente" : "Nuevo Cliente"}
-
         </h1>
 
         <button
+          type="button"
           onClick={() => navigate("/clientes")}
-          className="rounded-lg bg-slate-600 px-4 py-2 text-white hover:bg-slate-700"
+          className="shrink-0 rounded-lg bg-slate-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
         >
           Volver
         </button>
 
       </div>
 
-      <div className="rounded-xl bg-white p-6 shadow space-y-5">
+      {/* Formulario */}
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
 
-        <div>
+        <div className="space-y-5">
 
-          <label className="mb-2 block font-medium">
-            Nombre *
-          </label>
-
-          <input
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="w-full rounded-lg border p-3"
-          />
-
-        </div>
-
-        <div className="grid grid-cols-2 gap-5">
-
+          {/* Nombre */}
           <div>
 
-            <label className="mb-2 block font-medium">
-              Teléfono
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Nombre *
             </label>
 
             <input
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
-              className="w-full rounded-lg border p-3"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              placeholder="Nombre completo o razón social"
+              className="w-full rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
 
           </div>
 
+          {/* Teléfono + Documento */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+
+            <div>
+
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
+                Teléfono
+              </label>
+
+              <input
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+                placeholder="Ej: 0414-1234567"
+                className="w-full rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              />
+
+            </div>
+
+            <div>
+
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
+                Documento
+              </label>
+
+              <input
+                value={documento}
+                onChange={(e) => setDocumento(e.target.value)}
+                placeholder="Ej: V-12345678"
+                className="w-full rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              />
+
+            </div>
+
+          </div>
+
+          {/* Correo */}
           <div>
 
-            <label className="mb-2 block font-medium">
-              Documento
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Correo
             </label>
 
             <input
-              value={documento}
-              onChange={(e) => setDocumento(e.target.value)}
-              className="w-full rounded-lg border p-3"
+              type="email"
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+              placeholder="correo@ejemplo.com"
+              className="w-full rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             />
 
           </div>
 
-        </div>
+          {/* Dirección */}
+          <div>
 
-        <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Dirección
+            </label>
 
-          <label className="mb-2 block font-medium">
-            Correo
-          </label>
+            <textarea
+              rows={3}
+              value={direccion}
+              onChange={(e) => setDireccion(e.target.value)}
+              placeholder="Dirección del cliente"
+              className="w-full resize-none rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
 
-          <input
-            value={correo}
-            onChange={(e) => setCorreo(e.target.value)}
-            className="w-full rounded-lg border p-3"
-          />
+          </div>
 
-        </div>
+          {/* Observaciones */}
+          <div>
 
-        <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Observaciones
+            </label>
 
-          <label className="mb-2 block font-medium">
-            Dirección
-          </label>
+            <textarea
+              rows={4}
+              value={observaciones}
+              onChange={(e) => setObservaciones(e.target.value)}
+              placeholder="Información adicional del cliente..."
+              className="w-full resize-none rounded-lg border border-slate-300 px-3 py-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+            />
 
-          <textarea
-            rows={2}
-            value={direccion}
-            onChange={(e) => setDireccion(e.target.value)}
-            className="w-full rounded-lg border p-3"
-          />
+          </div>
 
-        </div>
+          {/* Acciones */}
+          <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-5 sm:flex-row sm:justify-end">
 
-        <div>
+            <button
+              type="button"
+              onClick={() => navigate("/clientes")}
+              className="w-full rounded-lg bg-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-300 sm:w-auto"
+            >
+              Cancelar
+            </button>
 
-          <label className="mb-2 block font-medium">
-            Observaciones
-          </label>
+            <button
+              type="button"
+              disabled={guardando}
+              onClick={guardar}
+              className="w-full rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400 sm:w-auto"
+            >
+              {guardando ? "Guardando..." : "Guardar"}
+            </button>
 
-          <textarea
-            rows={4}
-            value={observaciones}
-            onChange={(e) => setObservaciones(e.target.value)}
-            className="w-full rounded-lg border p-3"
-          />
-
-        </div>
-
-        <div className="flex justify-end gap-3">
-
-          <button
-            onClick={() => navigate("/clientes")}
-            className="rounded-lg bg-slate-300 px-5 py-3"
-          >
-            Cancelar
-          </button>
-
-          <button
-            disabled={guardando}
-            onClick={guardar}
-            className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700 disabled:bg-slate-400"
-          >
-            {guardando ? "Guardando..." : "Guardar"}
-          </button>
+          </div>
 
         </div>
 

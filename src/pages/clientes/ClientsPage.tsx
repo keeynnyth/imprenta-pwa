@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -9,29 +8,44 @@ import {
   type Cliente,
 } from "../../services/clientes.service";
 
+import Pagination from "../../components/ui/Pagination";
+import SearchInput from "../../components/ui/SearchInput";
+import DataTable from "../../components/ui/DataTable";
+import PrimaryButton from "../../components/ui/PrimaryButton";
+
 function ClientsPage() {
   const navigate = useNavigate();
 
   const [clientes, setClientes] = useState<Cliente[]>([]);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+
+  const PAGE_SIZE = 30;
+
   const [busqueda, setBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
+
   const [clienteExpandido, setClienteExpandido] =
-  useState<string | null>(null);
+    useState<string | null>(null);
+
   const [historialCliente, setHistorialCliente] =
-  useState<any>(null);
-  
+    useState<any>(null);
 
   useEffect(() => {
     cargarClientes();
-  }, []);
+  }, [page]);
 
   async function cargarClientes() {
     try {
       setCargando(true);
 
-      const data = await obtenerClientes();
-      setClientes(data);
+      const resultado = await obtenerClientes(
+        page,
+        PAGE_SIZE
+      );
 
+      setClientes(resultado.data);
+      setTotal(resultado.total);
     } catch (error) {
       console.error(error);
     } finally {
@@ -56,34 +70,24 @@ function ClientsPage() {
   }
 
   async function verHistorial(id: string) {
+    if (clienteExpandido === id) {
+      setClienteExpandido(null);
+      return;
+    }
 
-  if (clienteExpandido === id) {
-    setClienteExpandido(null);
-    return;
+    try {
+      const data = await obtenerClienteConHistorial(id);
+
+      setHistorialCliente(data);
+      setClienteExpandido(id);
+    } catch (error) {
+      console.error(error);
+      alert("No fue posible cargar el historial.");
+    }
   }
-
-  try {
-
-    const data =
-      await obtenerClienteConHistorial(id);
-
-    setHistorialCliente(data);
-
-    setClienteExpandido(id);
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert("No fue posible cargar el historial.");
-
-  }
-
-}
 
   const clientesFiltrados = clientes.filter((cliente) => {
-
-    const texto = busqueda.toLowerCase();
+    const texto = busqueda.toLowerCase().trim();
 
     return (
       cliente.nombre.toLowerCase().includes(texto) ||
@@ -94,450 +98,763 @@ function ClientsPage() {
         .toLowerCase()
         .includes(texto)
     );
-
   });
 
+  const inicio = (page - 1) * PAGE_SIZE + 1;
+
+  const fin = Math.min(
+    page * PAGE_SIZE,
+    total
+  );
+
   return (
-    <div>
-
-      <div className="mb-6 flex items-center justify-between">
-
-        <h1 className="text-3xl font-bold text-slate-800">
-          Clientes
-        </h1>
-
-        <button
+    <DataTable
+      title="Clientes"
+      action={
+        <PrimaryButton
           onClick={() => navigate("/clientes/nuevo")}
-          className="rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700"
         >
           + Nuevo Cliente
-        </button>
-
-      </div>
-
-      <div className="mb-5">
-
-        <input
-          type="text"
-          placeholder="Buscar por nombre, documento o teléfono..."
+        </PrimaryButton>
+      }
+      search={
+        <SearchInput
           value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 p-3 focus:border-blue-500 focus:outline-none"
+          onChange={setBusqueda}
+          placeholder="Buscar por nombre, documento o teléfono..."
         />
-
-      </div>
-
-      <div className="mb-3 text-sm text-slate-500">
-
-        Mostrando {clientesFiltrados.length} de {clientes.length} clientes
-
-      </div>
-
-      <div className="overflow-hidden rounded-lg bg-white shadow">
-
-        <table className="min-w-full">
-
-          <thead className="bg-slate-100">
-
-            <tr>
-
-              <th className="px-4 py-3 text-left">
-                Nombre
-              </th>
-
-              <th className="px-4 py-3 text-left">
-                Documento
-              </th>
-
-              <th className="px-4 py-3 text-left">
-                Teléfono
-              </th>
-
-              <th className="px-4 py-3 text-center">
-                Acciones
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {cargando ? (
-
-              <tr>
-
-                <td
-                  colSpan={4}
-                  className="p-6 text-center"
-                >
-                  Cargando clientes...
-                </td>
-
-              </tr>
-
-            ) : clientes.length === 0 ? (
-
-              <tr>
-
-                <td
-                  colSpan={4}
-                  className="p-6 text-center text-slate-500"
-                >
-                  No hay clientes registrados.
-                </td>
-
-              </tr>
-
-            ) : (
-
-             clientesFiltrados.map((cliente) => (
-
-  <>
-
-    <tr
-      key={cliente.id}
-      className="border-t hover:bg-slate-50"
-    >
-
-      <td className="px-4 py-3">
-        {cliente.nombre}
-      </td>
-
-      <td className="px-4 py-3">
-        {cliente.documento || "-"}
-      </td>
-
-      <td className="px-4 py-3">
-        {cliente.telefono || "-"}
-      </td>
-
-      <td className="space-x-2 px-4 py-3 text-center">
-
-        <button
-          onClick={() =>
-            navigate(`/clientes/${cliente.id}`)
+      }
+      info={
+        <div className="text-sm font-medium text-slate-500">
+          Mostrando {total === 0 ? 0 : inicio}-{fin} de{" "}
+          {total} clientes
+        </div>
+      }
+      pagination={
+        <Pagination
+          page={page}
+          total={total}
+          pageSize={PAGE_SIZE}
+          onPrevious={() =>
+            setPage((p) => Math.max(1, p - 1))
           }
-          className="rounded bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600"
-        >
-          Editar
-        </button>
-
-        <button
-         onClick={() =>
-  verHistorial(cliente.id)
-}
-          className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
-        >
-          {clienteExpandido === cliente.id
-            ? "Ocultar"
-            : "Historial"}
-        </button>
-
-        <button
-          onClick={() =>
-            eliminar(cliente.id)
+          onNext={() =>
+            setPage((p) => p + 1)
           }
-          className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
-        >
-          Eliminar
-        </button>
+        />
+      }
+      mobileContent={
+        <>
+          {cargando ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500 shadow-sm">
+              Cargando clientes...
+            </div>
+          ) : clientesFiltrados.length === 0 ? (
+            <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-slate-500 shadow-sm">
+              No se encontraron clientes.
+            </div>
+          ) : (
+            clientesFiltrados.map((cliente) => (
+              <div key={cliente.id} className="space-y-2">
 
-      </td>
+                {/* Tarjeta del cliente */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
 
-    </tr>
+                  <div className="border-b border-slate-100 pb-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      Cliente
+                    </p>
 
-    {clienteExpandido === cliente.id && (
+                    <p className="mt-1 break-words text-base font-semibold text-slate-800">
+                      {cliente.nombre}
+                    </p>
+                  </div>
 
-      <tr>
+                  <div className="grid grid-cols-1 gap-3 py-4">
 
-        <td
-          colSpan={4}
-          className="bg-slate-50 p-6"
-        >
+                    <div className="rounded-lg bg-slate-50 p-3">
+                      <p className="text-xs font-medium text-slate-500">
+                        Documento
+                      </p>
 
-          <div className="rounded-lg border bg-white p-4">
+                      <p className="mt-1 font-medium text-slate-800">
+                        {cliente.documento || "-"}
+                      </p>
+                    </div>
 
-            <h3 className="mb-2 text-lg font-semibold">
-              Historial de {cliente.nombre}
-            </h3>
+                    <div className="rounded-lg bg-slate-50 p-3">
+                      <p className="text-xs font-medium text-slate-500">
+                        Teléfono
+                      </p>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+                      <p className="mt-1 font-medium text-slate-800">
+                        {cliente.telefono || "-"}
+                      </p>
+                    </div>
 
-  <div className="rounded-lg border bg-slate-50 p-4">
+                  </div>
 
-    <h4 className="mb-4 text-lg font-semibold">
-      Datos del cliente
-    </h4>
-
-    <div className="space-y-2 text-sm">
-
-      <p>
-        <span className="font-semibold">Documento:</span>{" "}
-        {historialCliente.documento || "-"}
-      </p>
-
-      <p>
-        <span className="font-semibold">Teléfono:</span>{" "}
-        {historialCliente.telefono || "-"}
-      </p>
-
-      <p>
-        <span className="font-semibold">Correo:</span>{" "}
-        {historialCliente.correo || "-"}
-      </p>
-
-      <p>
-        <span className="font-semibold">Dirección:</span>{" "}
-        {historialCliente.direccion || "-"}
-      </p>
-
-      <p>
-        <span className="font-semibold">Observaciones:</span>{" "}
-        {historialCliente.observaciones || "-"}
-      </p>
-
-    </div>
-
-  </div>
-
-  <div className="lg:col-span-2 space-y-6">
-
-    <div>
-
-      <h4 className="mb-3 text-lg font-semibold">
-        Cotizaciones
-      </h4>
-
-      <div className="overflow-x-auto rounded-lg border">
-
-        <table className="min-w-full">
-
-          <thead className="bg-slate-100">
-
-            <tr>
-
-              <th className="px-3 py-2 text-left">
-                Número
-              </th>
-
-              <th className="px-3 py-2 text-left">
-                Fecha
-              </th>
-
-              <th className="px-3 py-2 text-left">
-                Estado
-              </th>
-
-              <th className="px-3 py-2 text-right">
-                Total
-              </th>
-
-              <th className="px-3 py-2 text-center">
-                Acción
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {historialCliente.cotizaciones.length === 0 ? (
-
-              <tr>
-
-                <td
-                  colSpan={5}
-                  className="p-4 text-center text-slate-500"
-                >
-                  No existen cotizaciones.
-                </td>
-
-              </tr>
-
-            ) : (
-
-              historialCliente.cotizaciones.map((cotizacion: any) => (
-
-                <tr
-                  key={cotizacion.id}
-                  className="border-t"
-                >
-
-                  <td className="px-3 py-2">
-                    {cotizacion.numero}
-                  </td>
-
-                  <td className="px-3 py-2">
-                    {new Date(cotizacion.created_at).toLocaleDateString()}
-                  </td>
-
-                  <td className="px-3 py-2">
-                    {cotizacion.estado}
-                  </td>
-
-                  <td className="px-3 py-2 text-right">
-                    Bs {cotizacion.total_bs.toFixed(2)}
-                  </td>
-
-                  <td className="px-3 py-2 text-center">
+                  {/* Acciones */}
+                  <div className="grid grid-cols-3 gap-2 border-t border-slate-100 pt-3">
 
                     <button
+                      type="button"
                       onClick={() =>
-                        navigate(`/cotizaciones/${cotizacion.id}`)
+                        navigate(`/clientes/${cliente.id}`)
                       }
-                      className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
+                      className="rounded-lg bg-amber-500 px-2 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
                     >
-                      Ver
+                      Editar
                     </button>
 
-                  </td>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        verHistorial(cliente.id)
+                      }
+                      className="rounded-lg bg-blue-600 px-2 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                    >
+                      {clienteExpandido === cliente.id
+                        ? "Ocultar"
+                        : "Historial"}
+                    </button>
 
-                </tr>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        eliminar(cliente.id)
+                      }
+                      className="rounded-lg bg-red-600 px-2 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
+                    >
+                      Eliminar
+                    </button>
 
-              ))
+                  </div>
+                </div>
 
-            )}
+                {/* Historial móvil */}
+                {clienteExpandido === cliente.id &&
+                  historialCliente && (
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
 
-          </tbody>
+                      <h3 className="mb-4 text-lg font-semibold text-slate-800">
+                        Historial de {cliente.nombre}
+                      </h3>
 
-        </table>
+                      {/* Datos del cliente */}
+                      <div className="rounded-xl border border-slate-200 bg-white p-4">
 
-      </div>
+                        <h4 className="mb-4 font-semibold text-slate-800">
+                          Datos del cliente
+                        </h4>
 
-    </div>
+                        <div className="space-y-2 text-sm text-slate-600">
 
-    <div>
+                          <p>
+                            <strong>Documento:</strong>{" "}
+                            {historialCliente.documento || "-"}
+                          </p>
 
-      <h4 className="mb-3 text-lg font-semibold">
-        Órdenes de trabajo
-      </h4>
+                          <p>
+                            <strong>Teléfono:</strong>{" "}
+                            {historialCliente.telefono || "-"}
+                          </p>
 
-      <div className="overflow-x-auto rounded-lg border">
+                          <p>
+                            <strong>Correo:</strong>{" "}
+                            {historialCliente.correo || "-"}
+                          </p>
 
-        <table className="min-w-full">
+                          <p>
+                            <strong>Dirección:</strong>{" "}
+                            {historialCliente.direccion || "-"}
+                          </p>
 
-          <thead className="bg-slate-100">
+                          <p>
+                            <strong>Observaciones:</strong>{" "}
+                            {historialCliente.observaciones || "-"}
+                          </p>
 
+                        </div>
+                      </div>
+
+                      {/* Cotizaciones */}
+                      <div className="mt-5">
+
+                        <h4 className="mb-3 text-lg font-semibold text-slate-800">
+                          Cotizaciones
+                        </h4>
+
+                        {historialCliente.cotizaciones?.length ? (
+                          <div className="space-y-3">
+                            {historialCliente.cotizaciones.map(
+                              (cotizacion: any) => (
+                                <div
+                                  key={cotizacion.id}
+                                  className="rounded-xl border border-slate-200 bg-white p-4"
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+
+                                    <div>
+                                      <p className="text-xs text-slate-500">
+                                        Número
+                                      </p>
+
+                                      <p className="font-semibold text-slate-800">
+                                        {cotizacion.numero}
+                                      </p>
+                                    </div>
+
+                                    <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
+                                      {cotizacion.estado}
+                                    </span>
+
+                                  </div>
+
+                                  <div className="mt-3 grid grid-cols-2 gap-3">
+
+                                    <div>
+                                      <p className="text-xs text-slate-500">
+                                        Fecha
+                                      </p>
+
+                                      <p className="text-sm text-slate-700">
+                                        {new Date(
+                                          cotizacion.created_at
+                                        ).toLocaleDateString()}
+                                      </p>
+                                    </div>
+
+                                    <div>
+                                      <p className="text-xs text-slate-500">
+                                        Total
+                                      </p>
+
+                                      <p className="text-sm font-semibold text-slate-700">
+                                        Bs{" "}
+                                        {Number(
+                                          cotizacion.total_bs
+                                        ).toFixed(2)}
+                                      </p>
+                                    </div>
+
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      navigate(
+                                        `/cotizaciones/${cotizacion.id}`
+                                      )
+                                    }
+                                    className="mt-4 w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                                  >
+                                    Ver cotización
+                                  </button>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <div className="rounded-xl border border-slate-200 bg-white p-4 text-center text-sm text-slate-500">
+                            No existen cotizaciones.
+                          </div>
+                        )}
+
+                      </div>
+
+                      {/* Órdenes de trabajo */}
+                      <div className="mt-6">
+
+                        <h4 className="mb-3 text-lg font-semibold text-slate-800">
+                          Órdenes de trabajo
+                        </h4>
+
+                        {historialCliente.ordenes_trabajo?.length ? (
+                          <div className="space-y-3">
+                            {historialCliente.ordenes_trabajo.map(
+                              (orden: any) => (
+                                <div
+                                  key={orden.id}
+                                  className="rounded-xl border border-slate-200 bg-white p-4"
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+
+                                    <div>
+                                      <p className="text-xs text-slate-500">
+                                        Número
+                                      </p>
+
+                                      <p className="font-semibold text-slate-800">
+                                        OT-{orden.numero}
+                                      </p>
+                                    </div>
+
+                                    <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
+                                      {orden.estado}
+                                    </span>
+
+                                  </div>
+
+                                  <div className="mt-3 grid grid-cols-2 gap-3">
+
+                                    <div>
+                                      <p className="text-xs text-slate-500">
+                                        Fecha
+                                      </p>
+
+                                      <p className="text-sm text-slate-700">
+                                        {new Date(
+                                          orden.fecha_creacion
+                                        ).toLocaleDateString()}
+                                      </p>
+                                    </div>
+
+                                    <div>
+                                      <p className="text-xs text-slate-500">
+                                        Total
+                                      </p>
+
+                                      <p className="text-sm font-semibold text-slate-700">
+                                        Bs{" "}
+                                        {Number(
+                                          orden.total
+                                        ).toFixed(2)}
+                                      </p>
+                                    </div>
+
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      navigate(
+                                        `/ordenes-trabajo/${orden.id}`
+                                      )
+                                    }
+                                    className="mt-4 w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                                  >
+                                    Ver orden
+                                  </button>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <div className="rounded-xl border border-slate-200 bg-white p-4 text-center text-sm text-slate-500">
+                            No existen órdenes de trabajo.
+                          </div>
+                        )}
+
+                      </div>
+
+                    </div>
+                  )}
+
+              </div>
+            ))
+          )}
+        </>
+      }
+    >
+      {/* Tabla desktop */}
+      <table className="min-w-[900px] w-full">
+
+        <thead className="border-b border-slate-200 bg-slate-50">
+          <tr>
+
+            <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-600">
+              Nombre
+            </th>
+
+            <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-600">
+              Documento
+            </th>
+
+            <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-600">
+              Teléfono
+            </th>
+
+            <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wide text-slate-600">
+              Acciones
+            </th>
+
+          </tr>
+        </thead>
+
+        <tbody>
+
+          {cargando ? (
             <tr>
-
-              <th className="px-3 py-2 text-left">
-                Número
-              </th>
-
-              <th className="px-3 py-2 text-left">
-                Fecha
-              </th>
-
-              <th className="px-3 py-2 text-left">
-                Estado
-              </th>
-
-              <th className="px-3 py-2 text-right">
-                Total
-              </th>
-
-              <th className="px-3 py-2 text-center">
-                Acción
-              </th>
-
+              <td
+                colSpan={4}
+                className="p-8 text-center text-slate-500"
+              >
+                Cargando clientes...
+              </td>
             </tr>
+          ) : clientesFiltrados.length === 0 ? (
+            <tr>
+              <td
+                colSpan={4}
+                className="p-8 text-center text-slate-500"
+              >
+                No se encontraron clientes.
+              </td>
+            </tr>
+          ) : (
+            clientesFiltrados.map((cliente) => (
+              <Fragment key={cliente.id}>
 
-          </thead>
+                {/* Cliente */}
+                <tr className="border-t border-slate-100 transition-colors hover:bg-orange-50/40">
 
-          <tbody>
-
-            {historialCliente.ordenes_trabajo.length === 0 ? (
-
-              <tr>
-
-                <td
-                  colSpan={5}
-                  className="p-4 text-center text-slate-500"
-                >
-                  No existen órdenes.
-                </td>
-
-              </tr>
-
-            ) : (
-
-              historialCliente.ordenes_trabajo.map((orden: any) => (
-
-                <tr
-                  key={orden.id}
-                  className="border-t"
-                >
-
-                  <td className="px-3 py-2">
-                    OT-{orden.numero}
+                  <td className="px-4 py-3">
+                    {cliente.nombre}
                   </td>
 
-                  <td className="px-3 py-2">
-                    {new Date(orden.fecha_creacion).toLocaleDateString()}
+                  <td className="px-4 py-3">
+                    {cliente.documento || "-"}
                   </td>
 
-                  <td className="px-3 py-2">
-                    {orden.estado}
+                  <td className="px-4 py-3">
+                    {cliente.telefono || "-"}
                   </td>
 
-                  <td className="px-3 py-2 text-right">
-                    Bs {Number(orden.total).toFixed(2)}
-                  </td>
+                  <td className="px-4 py-3">
 
-                  <td className="px-3 py-2 text-center">
+                    <div className="flex flex-wrap justify-center gap-2">
 
-                   <button
-  onClick={() =>
-    navigate(`/ordenes-trabajo/${orden.id}`)
-  }
-  className="rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
->
-  Ver
-</button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(`/clientes/${cliente.id}`)
+                        }
+                        className="rounded-md bg-amber-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-amber-600"
+                      >
+                        Editar
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          verHistorial(cliente.id)
+                        }
+                        className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-blue-700"
+                      >
+                        {clienteExpandido === cliente.id
+                          ? "Ocultar"
+                          : "Historial"}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          eliminar(cliente.id)
+                        }
+                        className="rounded-md bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-700"
+                      >
+                        Eliminar
+                      </button>
+
+                    </div>
 
                   </td>
 
                 </tr>
 
-              ))
+                {/* Historial desktop */}
+                {clienteExpandido === cliente.id &&
+                  historialCliente && (
+                    <tr>
 
-            )}
+                      <td
+                        colSpan={4}
+                        className="bg-slate-50 p-6"
+                      >
 
-          </tbody>
+                        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
 
-        </table>
+                          <h3 className="mb-4 text-lg font-semibold text-slate-800">
+                            Historial de {cliente.nombre}
+                          </h3>
 
-      </div>
+                          <div className="grid gap-6 lg:grid-cols-3">
 
-    </div>
+                            {/* Datos del cliente */}
+                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
 
-  </div>
+                              <h4 className="mb-4 text-lg font-semibold text-slate-800">
+                                Datos del cliente
+                              </h4>
 
-</div>
+                              <div className="space-y-2 text-sm text-slate-600">
 
-          </div>
+                                <p>
+                                  <strong>Documento:</strong>{" "}
+                                  {historialCliente.documento || "-"}
+                                </p>
 
-        </td>
+                                <p>
+                                  <strong>Teléfono:</strong>{" "}
+                                  {historialCliente.telefono || "-"}
+                                </p>
 
-      </tr>
+                                <p>
+                                  <strong>Correo:</strong>{" "}
+                                  {historialCliente.correo || "-"}
+                                </p>
 
-    )}
+                                <p>
+                                  <strong>Dirección:</strong>{" "}
+                                  {historialCliente.direccion || "-"}
+                                </p>
 
-  </>
+                                <p>
+                                  <strong>Observaciones:</strong>{" "}
+                                  {historialCliente.observaciones || "-"}
+                                </p>
 
-))
+                              </div>
+                            </div>
 
-            )}
+                            {/* Historial */}
+                            <div className="space-y-6 lg:col-span-2">
 
-          </tbody>
+                              {/* Cotizaciones */}
+                              <div>
 
-        </table>
+                                <h4 className="mb-3 text-lg font-semibold text-slate-800">
+                                  Cotizaciones
+                                </h4>
 
-      </div>
+                                <div className="overflow-x-auto rounded-xl border border-slate-200">
 
-    </div>
+                                  <table className="min-w-[700px] w-full">
+
+                                    <thead className="bg-slate-50">
+                                      <tr>
+
+                                        <th className="px-3 py-3 text-left">
+                                          Número
+                                        </th>
+
+                                        <th className="px-3 py-3 text-left">
+                                          Fecha
+                                        </th>
+
+                                        <th className="px-3 py-3 text-left">
+                                          Estado
+                                        </th>
+
+                                        <th className="px-3 py-3 text-right">
+                                          Total
+                                        </th>
+
+                                        <th className="px-3 py-3 text-center">
+                                          Acción
+                                        </th>
+
+                                      </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                      {historialCliente.cotizaciones?.length ? (
+                                        historialCliente.cotizaciones.map(
+                                          (cotizacion: any) => (
+                                            <tr
+                                              key={cotizacion.id}
+                                              className="border-t border-slate-100"
+                                            >
+
+                                              <td className="px-3 py-2">
+                                                {cotizacion.numero}
+                                              </td>
+
+                                              <td className="px-3 py-2">
+                                                {new Date(
+                                                  cotizacion.created_at
+                                                ).toLocaleDateString()}
+                                              </td>
+
+                                              <td className="px-3 py-2">
+                                                {cotizacion.estado}
+                                              </td>
+
+                                              <td className="px-3 py-2 text-right">
+                                                Bs{" "}
+                                                {Number(
+                                                  cotizacion.total_bs
+                                                ).toFixed(2)}
+                                              </td>
+
+                                              <td className="px-3 py-2 text-center">
+
+                                                <button
+                                                  type="button"
+                                                  onClick={() =>
+                                                    navigate(
+                                                      `/cotizaciones/${cotizacion.id}`
+                                                    )
+                                                  }
+                                                  className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+                                                >
+                                                  Ver
+                                                </button>
+
+                                              </td>
+
+                                            </tr>
+                                          )
+                                        )
+                                      ) : (
+                                        <tr>
+
+                                          <td
+                                            colSpan={5}
+                                            className="p-4 text-center text-slate-500"
+                                          >
+                                            No existen cotizaciones.
+                                          </td>
+
+                                        </tr>
+                                      )}
+
+                                    </tbody>
+
+                                  </table>
+
+                                </div>
+
+                              </div>
+
+                              {/* Órdenes de trabajo */}
+                              <div>
+
+                                <h4 className="mb-3 text-lg font-semibold text-slate-800">
+                                  Órdenes de trabajo
+                                </h4>
+
+                                <div className="overflow-x-auto rounded-xl border border-slate-200">
+
+                                  <table className="min-w-[700px] w-full">
+
+                                    <thead className="bg-slate-50">
+                                      <tr>
+
+                                        <th className="px-3 py-3 text-left">
+                                          Número
+                                        </th>
+
+                                        <th className="px-3 py-3 text-left">
+                                          Fecha
+                                        </th>
+
+                                        <th className="px-3 py-3 text-left">
+                                          Estado
+                                        </th>
+
+                                        <th className="px-3 py-3 text-right">
+                                          Total
+                                        </th>
+
+                                        <th className="px-3 py-3 text-center">
+                                          Acción
+                                        </th>
+
+                                      </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                      {historialCliente.ordenes_trabajo?.length ? (
+                                        historialCliente.ordenes_trabajo.map(
+                                          (orden: any) => (
+                                            <tr
+                                              key={orden.id}
+                                              className="border-t border-slate-100"
+                                            >
+
+                                              <td className="px-3 py-2">
+                                                OT-{orden.numero}
+                                              </td>
+
+                                              <td className="px-3 py-2">
+                                                {new Date(
+                                                  orden.fecha_creacion
+                                                ).toLocaleDateString()}
+                                              </td>
+
+                                              <td className="px-3 py-2">
+                                                {orden.estado}
+                                              </td>
+
+                                              <td className="px-3 py-2 text-right">
+                                                Bs{" "}
+                                                {Number(
+                                                  orden.total
+                                                ).toFixed(2)}
+                                              </td>
+
+                                              <td className="px-3 py-2 text-center">
+
+                                                <button
+                                                  type="button"
+                                                  onClick={() =>
+                                                    navigate(
+                                                      `/ordenes-trabajo/${orden.id}`
+                                                    )
+                                                  }
+                                                  className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+                                                >
+                                                  Ver
+                                                </button>
+
+                                              </td>
+
+                                            </tr>
+                                          )
+                                        )
+                                      ) : (
+                                        <tr>
+
+                                          <td
+                                            colSpan={5}
+                                            className="p-4 text-center text-slate-500"
+                                          >
+                                            No existen órdenes de trabajo.
+                                          </td>
+
+                                        </tr>
+                                      )}
+
+                                    </tbody>
+
+                                  </table>
+
+                                </div>
+
+                              </div>
+
+                            </div>
+                          </div>
+
+                        </div>
+
+                      </td>
+
+                    </tr>
+                  )}
+
+              </Fragment>
+            ))
+          )}
+
+        </tbody>
+
+      </table>
+    </DataTable>
   );
 }
 

@@ -1,5 +1,4 @@
 
-import { Link } from "react-router-dom";
 import PrimaryButton from "./PrimaryButton";
 
 interface PageHeaderProps {
@@ -16,23 +15,25 @@ function PageHeader({
   buttonLink,
 }: PageHeaderProps) {
   return (
-    <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h1 className="text-3xl font-bold text-slate-800">
+        <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
           {title}
         </h1>
 
         {subtitle && (
-          <p className="mt-1 text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 sm:text-base">
             {subtitle}
           </p>
         )}
       </div>
 
       {buttonText && buttonLink && (
-        <PrimaryButton to={buttonLink}>
-  {buttonText}
-</PrimaryButton>
+        <div className="w-full sm:w-auto">
+          <PrimaryButton to={buttonLink}>
+            {buttonText}
+          </PrimaryButton>
+        </div>
       )}
     </div>
   );

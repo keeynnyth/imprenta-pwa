@@ -12,14 +12,19 @@ export default defineConfig({
       registerType: "autoUpdate",
 
       manifest: {
-        name: "Sistema de Imprenta",
-        short_name: "Imprenta",
-        description: "Sistema de gestión para imprentas",
-        theme_color: "#1e3a8a",
-        background_color: "#ffffff",
+        name: "LAGOGRAPHI | Sistema de Gestión",
+        short_name: "LAGOGRAPHI",
+        description:
+          "Sistema de Gestión de Imprenta LAGOGRAPHI",
+
+        theme_color: "#f97316",
+        background_color: "#f1f5f9",
+
         display: "standalone",
         orientation: "portrait",
+
         start_url: "/",
+        scope: "/",
 
         icons: [
           {

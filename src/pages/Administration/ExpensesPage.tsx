@@ -17,8 +17,10 @@ function ExpensesPage() {
 
  async function cargarEgresos() {
   try {
-    const data = await obtenerMovimientos("Egreso");
-    setExpenses(data ?? []);
+    const resultado =
+  await obtenerMovimientos("Egreso");
+
+setExpenses(resultado.data);
   } catch (error) {
     console.error(error);
   }

@@ -137,19 +137,35 @@ export interface Cotizacion {
   cliente_id: string | null;
 }
 
-export async function obtenerCotizaciones(): Promise<Cotizacion[]> {
+export async function obtenerCotizaciones(
+  page = 1,
+  pageSize = 30
+) {
+  const desde = (page - 1) * pageSize;
+  const hasta = desde + pageSize - 1;
 
-  const { data, error } = await supabase
+  const {
+    data,
+    error,
+    count,
+  } = await supabase
     .from("cotizaciones")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .select("*", {
+      count: "exact",
+    })
+    .order("created_at", {
+      ascending: false,
+    })
+    .range(desde, hasta);
 
   if (error) {
     throw error;
   }
 
-  return data ?? [];
-
+  return {
+    data: data ?? [],
+    total: count ?? 0,
+  };
 }
 export async function obtenerCotizacionPorId(id: string) {
   const { data, error } = await supabase

@@ -46,15 +46,33 @@ async function calcularPrecios(
   };
 }
 
-export async function obtenerProductos(): Promise<Producto[]> {
-  const { data, error } = await supabase
+export async function obtenerProductos(
+  page = 1,
+  pageSize = 30
+) {
+  const desde = (page - 1) * pageSize;
+  const hasta = desde + pageSize - 1;
+
+  const {
+    data,
+    error,
+    count,
+  } = await supabase
     .from("productos")
-    .select("*")
-    .order("nombre");
+    .select("*", {
+      count: "exact",
+    })
+    .order("nombre")
+    .range(desde, hasta);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
-  return data ?? [];
+  return {
+    data: (data ?? []) as Producto[],
+    total: count ?? 0,
+  };
 }
 
 export async function crearProducto(

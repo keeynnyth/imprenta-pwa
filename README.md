@@ -389,3 +389,287 @@ imprenta-pwa
 └─ vite.config.ts
 
 ```
+```
+imprenta-pwa
+├─ .oxlintrc.json
+├─ docs
+│  ├─ 01-Requisitos.md
+│  ├─ 02-Arquitectura.md
+│  ├─ 03-BaseDatos.md
+│  └─ Decisiones.md
+├─ index.html
+├─ package-lock.json
+├─ package.json
+├─ public
+│  ├─ favicon.svg
+│  └─ icons.svg
+├─ README.md
+├─ src
+│  ├─ api
+│  ├─ App.css
+│  ├─ App.tsx
+│  ├─ assets
+│  │  ├─ hero.png
+│  │  ├─ images
+│  │  │  ├─ fachada.jpg
+│  │  │  ├─ logo-redondo-agua.png
+│  │  │  ├─ logo-redondo.png
+│  │  │  └─ logo.png
+│  │  ├─ react.svg
+│  │  └─ vite.svg
+│  ├─ components
+│  │  ├─ clients
+│  │  │  └─ ClientSelector.tsx
+│  │  ├─ common
+│  │  ├─ forms
+│  │  ├─ layout
+│  │  │  ├─ MenuLateral.tsx
+│  │  │  └─ ProtectedLayout.tsx
+│  │  ├─ quotes
+│  │  │  ├─ QuoteItem.tsx
+│  │  │  └─ QuotePdf.ts
+│  │  ├─ ui
+│  │  │  ├─ Card.tsx
+│  │  │  ├─ Modal.tsx
+│  │  │  ├─ PageHeader.tsx
+│  │  │  └─ PrimaryButton.tsx
+│  │  └─ workorders
+│  │     └─ WorkOrderPdf.ts
+│  ├─ config
+│  │  └─ supabase.ts
+│  ├─ contexts
+│  │  ├─ AuthContext.tsx
+│  │  └─ AuthProvider.tsx
+│  ├─ hooks
+│  ├─ index.css
+│  ├─ interfaces
+│  │  ├─ orden-trabajo.interface.ts
+│  │  └─ usuario.interface.ts
+│  ├─ main.tsx
+│  ├─ pages
+│  │  ├─ Administration
+│  │  │  ├─ ExpenseFormPage.tsx
+│  │  │  ├─ ExpensesPage.tsx
+│  │  │  ├─ IncomeFormPage.tsx
+│  │  │  ├─ IncomesPage.tsx
+│  │  │  ├─ UserFormPage.tsx
+│  │  │  └─ UsersPage.tsx
+│  │  ├─ Auth
+│  │  │  └─ ResetPasswordPage.tsx
+│  │  ├─ clientes
+│  │  │  ├─ ClientsPage.tsx
+│  │  │  └─ NewClientPage.tsx
+│  │  ├─ Dashboard
+│  │  │  └─ DashboardPage.tsx
+│  │  ├─ Login
+│  │  │  └─ LoginPage.tsx
+│  │  ├─ Products
+│  │  │  ├─ NewProductPage.tsx
+│  │  │  ├─ ProductRow.tsx
+│  │  │  ├─ ProductsPage.tsx
+│  │  │  └─ ProductsTable.tsx
+│  │  ├─ Quotes
+│  │  │  ├─ QuoteDetailPage.tsx
+│  │  │  ├─ QuotesHistoryPage.tsx
+│  │  │  └─ QuotesPage.tsx
+│  │  ├─ Rates
+│  │  │  └─ RatesPage.tsx
+│  │  ├─ Settings
+│  │  │  └─ SettingsPage.tsx
+│  │  └─ WorkOrders
+│  │     ├─ WorkOrderDetailPage.tsx
+│  │     └─ WorkOrdersPage.tsx
+│  ├─ routes
+│  │  ├─ AdminRoute.tsx
+│  │  ├─ AppRouter.tsx
+│  │  └─ ProtectedRoute.tsx
+│  ├─ services
+│  │  ├─ clientes.service.ts
+│  │  ├─ movimientos.service.ts
+│  │  ├─ ordenes-trabajo.service.ts
+│  │  ├─ products.service.ts
+│  │  ├─ quotes.service.ts
+│  │  ├─ rates.service.ts
+│  │  └─ users.service.ts
+│  ├─ styles
+│  ├─ types
+│  │  └─ producto.ts
+│  └─ utils
+│     └─ currency.ts
+├─ supabase
+│  ├─ .temp
+│  │  ├─ gotrue-version
+│  │  ├─ linked-project.json
+│  │  ├─ pooler-url
+│  │  ├─ postgres-version
+│  │  ├─ project-ref
+│  │  ├─ rest-version
+│  │  ├─ storage-migration
+│  │  └─ storage-version
+│  ├─ config.toml
+│  └─ functions
+│     ├─ actualizar-tasas
+│     │  ├─ .npmrc
+│     │  ├─ bcv.ts
+│     │  ├─ binance.ts
+│     │  ├─ deno.json
+│     │  └─ index.ts
+│     ├─ create-user
+│     │  ├─ .npmrc
+│     │  ├─ deno.json
+│     │  └─ index.ts
+│     └─ reset-password
+│        ├─ .npmrc
+│        ├─ deno.json
+│        └─ index.ts
+├─ tsconfig.app.json
+├─ tsconfig.json
+├─ tsconfig.node.json
+└─ vite.config.ts
+
+```
+```
+imprenta-pwa
+├─ .oxlintrc.json
+├─ docs
+│  ├─ 01-Requisitos.md
+│  ├─ 02-Arquitectura.md
+│  ├─ 03-BaseDatos.md
+│  └─ Decisiones.md
+├─ index.html
+├─ package-lock.json
+├─ package.json
+├─ public
+│  ├─ favicon.svg
+│  └─ icons.svg
+├─ README.md
+├─ src
+│  ├─ api
+│  ├─ App.css
+│  ├─ App.tsx
+│  ├─ assets
+│  │  ├─ hero.png
+│  │  ├─ images
+│  │  │  ├─ fachada.jpg
+│  │  │  ├─ logo-redondo-agua.png
+│  │  │  ├─ logo-redondo.png
+│  │  │  └─ logo.png
+│  │  ├─ react.svg
+│  │  └─ vite.svg
+│  ├─ components
+│  │  ├─ clients
+│  │  │  └─ ClientSelector.tsx
+│  │  ├─ common
+│  │  ├─ finance
+│  │  │  └─ StatCard.tsx
+│  │  ├─ forms
+│  │  ├─ layout
+│  │  │  ├─ MenuLateral.tsx
+│  │  │  └─ ProtectedLayout.tsx
+│  │  ├─ quotes
+│  │  │  ├─ QuoteItem.tsx
+│  │  │  └─ QuotePdf.ts
+│  │  ├─ ui
+│  │  │  ├─ Card.tsx
+│  │  │  ├─ Modal.tsx
+│  │  │  ├─ PageHeader.tsx
+│  │  │  ├─ Pagination.tsx
+│  │  │  └─ PrimaryButton.tsx
+│  │  └─ workorders
+│  │     └─ WorkOrderPdf.ts
+│  ├─ config
+│  │  └─ supabase.ts
+│  ├─ contexts
+│  │  ├─ AuthContext.tsx
+│  │  └─ AuthProvider.tsx
+│  ├─ hooks
+│  ├─ index.css
+│  ├─ interfaces
+│  │  ├─ orden-trabajo.interface.ts
+│  │  └─ usuario.interface.ts
+│  ├─ main.tsx
+│  ├─ pages
+│  │  ├─ Administration
+│  │  │  ├─ ExpenseFormPage.tsx
+│  │  │  ├─ ExpensesPage.tsx
+│  │  │  ├─ FinanceDashboardPage.tsx
+│  │  │  ├─ FinanceMovementsPage.tsx
+│  │  │  ├─ FinanceNewMovementPage.tsx
+│  │  │  ├─ IncomeFormPage.tsx
+│  │  │  ├─ IncomesPage.tsx
+│  │  │  ├─ UserFormPage.tsx
+│  │  │  └─ UsersPage.tsx
+│  │  ├─ Auth
+│  │  │  └─ ResetPasswordPage.tsx
+│  │  ├─ clientes
+│  │  │  ├─ ClientsPage.tsx
+│  │  │  └─ NewClientPage.tsx
+│  │  ├─ Dashboard
+│  │  │  └─ DashboardPage.tsx
+│  │  ├─ Login
+│  │  │  └─ LoginPage.tsx
+│  │  ├─ Products
+│  │  │  ├─ NewProductPage.tsx
+│  │  │  ├─ ProductRow.tsx
+│  │  │  ├─ ProductsPage.tsx
+│  │  │  └─ ProductsTable.tsx
+│  │  ├─ Quotes
+│  │  │  ├─ QuoteDetailPage.tsx
+│  │  │  ├─ QuotesHistoryPage.tsx
+│  │  │  └─ QuotesPage.tsx
+│  │  ├─ Rates
+│  │  │  └─ RatesPage.tsx
+│  │  ├─ Settings
+│  │  │  └─ SettingsPage.tsx
+│  │  └─ WorkOrders
+│  │     ├─ WorkOrderDetailPage.tsx
+│  │     └─ WorkOrdersPage.tsx
+│  ├─ routes
+│  │  ├─ AdminRoute.tsx
+│  │  ├─ AppRouter.tsx
+│  │  └─ ProtectedRoute.tsx
+│  ├─ services
+│  │  ├─ clientes.service.ts
+│  │  ├─ movimientos.service.ts
+│  │  ├─ ordenes-trabajo.service.ts
+│  │  ├─ products.service.ts
+│  │  ├─ quotes.service.ts
+│  │  ├─ rates.service.ts
+│  │  └─ users.service.ts
+│  ├─ styles
+│  ├─ types
+│  │  └─ producto.ts
+│  └─ utils
+│     └─ currency.ts
+├─ supabase
+│  ├─ .temp
+│  │  ├─ gotrue-version
+│  │  ├─ linked-project.json
+│  │  ├─ pooler-url
+│  │  ├─ postgres-version
+│  │  ├─ project-ref
+│  │  ├─ rest-version
+│  │  ├─ storage-migration
+│  │  └─ storage-version
+│  ├─ config.toml
+│  └─ functions
+│     ├─ actualizar-tasas
+│     │  ├─ .npmrc
+│     │  ├─ bcv.ts
+│     │  ├─ binance.ts
+│     │  ├─ deno.json
+│     │  └─ index.ts
+│     ├─ create-user
+│     │  ├─ .npmrc
+│     │  ├─ deno.json
+│     │  └─ index.ts
+│     └─ reset-password
+│        ├─ .npmrc
+│        ├─ deno.json
+│        └─ index.ts
+├─ tsconfig.app.json
+├─ tsconfig.json
+├─ tsconfig.node.json
+└─ vite.config.ts
+
+```

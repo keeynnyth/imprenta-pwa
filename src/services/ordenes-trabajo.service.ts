@@ -2,17 +2,35 @@
 import { supabase } from "../config/supabase";
 import type { OrdenTrabajo } from "../interfaces/orden-trabajo.interface";
 
-export async function obtenerOrdenesTrabajo(): Promise<OrdenTrabajo[]> {
-  const { data, error } = await supabase
+export async function obtenerOrdenesTrabajo(
+  page = 1,
+  pageSize = 30
+) {
+  const desde = (page - 1) * pageSize;
+  const hasta = desde + pageSize - 1;
+
+  const {
+    data,
+    error,
+    count,
+  } = await supabase
     .from("ordenes_trabajo")
-    .select("*")
-    .order("numero", { ascending: false });
+    .select("*", {
+      count: "exact",
+    })
+    .order("numero", {
+      ascending: false,
+    })
+    .range(desde, hasta);
 
   if (error) {
     throw error;
   }
 
-  return data as OrdenTrabajo[];
+  return {
+    data: (data ?? []) as OrdenTrabajo[],
+    total: count ?? 0,
+  };
 }
 
 export async function crearOrdenTrabajo(data: {

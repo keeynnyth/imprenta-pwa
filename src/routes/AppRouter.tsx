@@ -4,6 +4,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import ProtectedLayout from "../components/layout/ProtectedLayout";
 
 import LoginPage from "../pages/Login/LoginPage";
+import ResetPasswordPage from "../pages/Auth/ResetPasswordPage";
 import DashboardPage from "../pages/Dashboard/DashboardPage";
 
 import ProductsPage from "../pages/Products/ProductsPage";
@@ -30,15 +31,22 @@ import ExpenseFormPage from "../pages/Administration/ExpenseFormPage";
 import UsersPage from "../pages/Administration/UsersPage";
 import UserFormPage from "../pages/Administration/UserFormPage";
 import AdminRoute from "./AdminRoute";
+import FinanceDashboardPage from "../pages/Administration/FinanceDashboardPage";
+import FinanceMovementsPage from "../pages/Administration/FinanceMovementsPage";
+import FinanceNewMovementPage from "../pages/Administration/FinanceNewMovementPage";
 
 function AppRouter() {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* Rutas públicas */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={<Navigate to="/login" replace />} />
+       {/* Rutas públicas */}
+<Route path="/login" element={<LoginPage />} />
+<Route
+  path="/reset-password"
+  element={<ResetPasswordPage />}
+/>
+<Route path="/" element={<Navigate to="/login" replace />} />
 
         {/* Rutas protegidas */}
         <Route
@@ -74,6 +82,32 @@ function AppRouter() {
 
           {/* Configuración */}
           <Route path="/configuracion" element={<SettingsPage />} />
+          {/* Finanzas */}
+<Route
+  path="/finanzas"
+  element={
+    <AdminRoute>
+      <FinanceDashboardPage />
+    </AdminRoute>
+  }
+/>
+<Route
+  path="/finanzas/movimientos"
+  element={
+    <AdminRoute>
+      <FinanceMovementsPage />
+    </AdminRoute>
+  }
+/>
+
+<Route
+  path="/movimientos/nuevo"
+  element={
+    <AdminRoute>
+      <FinanceNewMovementPage />
+    </AdminRoute>
+  }
+/>
 
           {/* Ingresos */}
          <Route
@@ -90,6 +124,15 @@ function AppRouter() {
   element={
     <AdminRoute>
       <IncomeFormPage />
+    </AdminRoute>
+  }
+/>
+
+<Route
+  path="/usuarios/:id"
+  element={
+    <AdminRoute>
+      <UserFormPage />
     </AdminRoute>
   }
 />

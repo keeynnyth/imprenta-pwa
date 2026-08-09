@@ -16,15 +16,33 @@ export interface Cliente {
 // Obtener todos los clientes
 //========================================
 
-export async function obtenerClientes(): Promise<Cliente[]> {
-  const { data, error } = await supabase
+export async function obtenerClientes(
+  page = 1,
+  pageSize = 30
+) {
+  const desde = (page - 1) * pageSize;
+  const hasta = desde + pageSize - 1;
+
+  const {
+    data,
+    error,
+    count,
+  } = await supabase
     .from("clientes")
-    .select("*")
-    .order("nombre");
+    .select("*", {
+      count: "exact",
+    })
+    .order("nombre")
+    .range(desde, hasta);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
-  return data ?? [];
+  return {
+    data: data ?? [],
+    total: count ?? 0,
+  };
 }
 
 //========================================

@@ -8,6 +8,12 @@ interface PrimaryButtonProps {
   onClick?: () => void;
   type?: "button" | "submit";
   disabled?: boolean;
+
+  variant?:
+    | "primary"
+    | "secondary"
+    | "danger"
+    | "success";
 }
 
 function PrimaryButton({
@@ -16,9 +22,36 @@ function PrimaryButton({
   onClick,
   type = "button",
   disabled = false,
+  variant = "primary"
 }: PrimaryButtonProps) {
-  const className =
-    "inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-400";
+  const variants = {
+  primary:
+    "bg-blue-600 hover:bg-blue-700 text-white",
+
+  secondary:
+    "bg-white border border-slate-300 text-slate-700 hover:bg-slate-100",
+
+  danger:
+    "bg-red-600 hover:bg-red-700 text-white",
+
+  success:
+    "bg-green-600 hover:bg-green-700 text-white",
+};
+
+const className = `
+inline-flex
+items-center
+justify-center
+rounded-xl
+px-5
+py-2.5
+font-medium
+transition
+disabled:cursor-not-allowed
+disabled:bg-slate-400
+
+${variants[variant]}
+`;
 
   if (to) {
     return (
